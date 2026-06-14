@@ -7,7 +7,7 @@ name = "glyphling"
 version = "0.1.0"
 description = "A procedurally-generated, interactive ASCII pet that lives in your terminal"
 requires-python = ">=3.11"
-dependencies = ["textual>=0.50"]
+dependencies = ["textual>=0.50", "psutil>=5.9"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-asyncio>=0.23"]
