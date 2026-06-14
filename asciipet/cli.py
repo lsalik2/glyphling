@@ -46,3 +46,6 @@ def main(argv=None) -> None:
         _cmd_rename(args.name)
     else:
         _cmd_run()
+
+if __name__ == "__main__":
+    main()
