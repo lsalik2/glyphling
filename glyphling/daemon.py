@@ -88,6 +88,7 @@ def start(path, interval=None) -> None:
     if status(path, time.time()):
         print("glyphling daemon already running")
         return
+    Path(path).parent.mkdir(parents=True, exist_ok=True)   # ensure state dir for log + state
     pid = os.fork()
     if pid > 0:
         print("glyphling daemon started")

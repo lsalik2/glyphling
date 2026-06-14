@@ -43,3 +43,14 @@ def test_status_on_stale_lock_says_not_running(tmp_path, capsys):
     coord.write_heartbeat(path, pid=4321, now=1000.0)
     daemon.print_status(path, now=1000.0 + balance.DAEMON_STALE_SECONDS + 5)  # stale
     assert "not running" in capsys.readouterr().out
+
+def test_start_ensures_state_dir_before_forking(tmp_path, monkeypatch, capsys):
+    """Regression: `glyphling daemon start` on a fresh XDG dir must create the state dir
+    (so the child's daemon.log open can't fail). We monkeypatch os.fork to take the parent
+    path WITHOUT actually forking a child."""
+    import glyphling.daemon as d
+    path = tmp_path / "glyphling" / "pet.json"     # parent dir does NOT exist yet
+    monkeypatch.setattr(d.os, "fork", lambda: 4242)  # pretend we're the parent
+    d.start(path)
+    assert path.parent.exists()                     # start ensured the state dir exists
+    assert "started" in capsys.readouterr().out
