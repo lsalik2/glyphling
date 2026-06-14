@@ -29,6 +29,18 @@ glyphling daemon start >/dev/null 2>&1
 
 With the daemon running, your glyphling sleeps on its circadian schedule (diurnal / nocturnal / crepuscular) and is ambiently tinted by your machine's load — visible whenever you open the live view.
 
+### Make it a desk familiar (optional)
+Let your pet react to your dev life — cheering green tests, celebrating commits, wincing at
+failures, startling at scary commands, and greeting you when you return:
+
+1. `glyphling daemon start` (it watches while it runs)
+2. `glyphling shell-init >> ~/.bashrc` (or `~/.zshrc`), then restart your shell
+
+**Privacy:** fully opt-in. The hook logs only the command lines you run (already in your shell
+history) plus exit codes — never keystrokes typed into programs. The log is local, drained
+continuously, and you can delete it or remove the hook block anytime. glyphling makes no network
+calls, ever.
+
 ## Roadmap
 
 glyphling grows in layers — each phase stands on its own, so it's always a whole thing, never half-built.
@@ -40,11 +52,9 @@ glyphling grows in layers — each phase stands on its own, so it's always a who
 - Animated Textual TUI — feed · play · clean · rest · pet · rename
 - Named the project **glyphling** (package, CLI, and repo)
 - **Phase 2 — it lives on its own:** background daemon (`glyphling daemon start/stop/status`) + ambient sensors; sleeps at its circadian night, ambient mood from CPU/battery, all while the TUI is closed
+- **Phase 3 — desk familiar:** opt-in shell hook (`glyphling shell-init`) + dev-activity reactions (cheers tests, celebrates commits, winces at failures, startles at scary commands) with speech bubbles, plus a welcome-back greeting
 
 **⏳ Next up**
-- **Phase 3 · "desk familiar"** — an opt-in shell hook so glyphling reacts to your real dev life: cheers green tests, celebrates commits, winces at errors, perks up when you return. *Privacy-first: command names only, never keystrokes; fully opt-in and removable.*
-
-**🗺️ Planned**
 - **Phase 4 · polish & breadth** — a one-line status-bar/tmux view, more archetypes/parts/quirks, visible life-stage growth, bond payoffs, color themes, balance tuning
 
 ### 🌱 Beyond Phase 4 — expansion ideas
