@@ -62,7 +62,7 @@ def status(path, now) -> bool:
 def print_status(path, now=None) -> None:
     now = time.time() if now is None else now
     lock = coord.read_lock(path)
-    if status(path, now):
+    if status(path, now) and lock is not None:
         print(f"glyphling daemon running (pid {lock['pid']})")
     else:
         print("glyphling daemon not running")
@@ -72,6 +72,10 @@ def stop(path, now=None) -> None:
     lock = coord.read_lock(path)
     if not lock:
         print("glyphling daemon not running")
+        return
+    if not status(path, now):
+        coord.clear_lock(path)
+        print("glyphling daemon not running (cleared stale lock)")
         return
     try:
         os.kill(lock["pid"], signal.SIGTERM)
