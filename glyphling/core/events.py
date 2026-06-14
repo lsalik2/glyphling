@@ -14,6 +14,14 @@ class EventType(str, Enum):
     CPU_SPIKE = "cpu_spike"     # ambient: machine busy
     LOW_BATTERY = "low_battery" # ambient: low power
     AMBIENT_CLEAR = "ambient_clear"  # ambient: nothing notable
+    # --- Phase 3 dev/presence reaction events ---
+    TESTS_PASSED = "tests_passed"
+    TESTS_FAILED = "tests_failed"
+    BUILD_DONE = "build_done"
+    BUILD_FAILED = "build_failed"
+    COMMITTED = "committed"
+    STARTLED = "startled"          # scary command
+    WELCOMED_BACK = "welcomed_back" # presence: returned after being away
 
 @dataclass(frozen=True)
 class Event:
@@ -45,3 +53,24 @@ def event_to_dict(event: "Event") -> dict:
 
 def event_from_dict(d: dict) -> "Event":
     return Event(EventType(d["type"]), dict(d.get("payload") or {}))
+
+# Phase 3: dev/presence reaction events (the daemon turns these into a speech bubble + pose).
+DEV_REACTION_EVENTS = {
+    EventType.TESTS_PASSED, EventType.TESTS_FAILED,
+    EventType.BUILD_DONE, EventType.BUILD_FAILED,
+    EventType.COMMITTED, EventType.STARTLED, EventType.WELCOMED_BACK,
+}
+
+# Reaction events that grant a small bond bump ("wins").
+WIN_EVENTS = {
+    EventType.TESTS_PASSED, EventType.BUILD_DONE,
+    EventType.COMMITTED, EventType.WELCOMED_BACK,
+}
+
+# Real user/dev activity used for presence (away-gap) detection.
+# Excludes ambient/clock events and the synthesized WELCOMED_BACK.
+ACTIVITY_EVENTS = WAKING_EVENTS | {
+    EventType.TESTS_PASSED, EventType.TESTS_FAILED,
+    EventType.BUILD_DONE, EventType.BUILD_FAILED,
+    EventType.COMMITTED, EventType.STARTLED,
+}

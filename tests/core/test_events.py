@@ -34,3 +34,25 @@ def test_event_dict_roundtrip():
     assert event_from_dict(event_to_dict(ev)) == ev
     ev2 = Event(EventType.NIGHTFALL)
     assert event_from_dict(event_to_dict(ev2)) == ev2
+
+from glyphling.core.events import DEV_REACTION_EVENTS, WIN_EVENTS, ACTIVITY_EVENTS
+
+def test_dev_event_types_exist():
+    for name in ("TESTS_PASSED", "TESTS_FAILED", "BUILD_DONE", "BUILD_FAILED",
+                 "COMMITTED", "STARTLED", "WELCOMED_BACK"):
+        assert hasattr(EventType, name)
+
+def test_win_events_are_a_subset_of_dev_reaction_events():
+    assert WIN_EVENTS <= DEV_REACTION_EVENTS
+    assert EventType.TESTS_PASSED in WIN_EVENTS
+    assert EventType.COMMITTED in WIN_EVENTS
+    assert EventType.WELCOMED_BACK in WIN_EVENTS
+    assert EventType.TESTS_FAILED not in WIN_EVENTS
+    assert EventType.STARTLED not in WIN_EVENTS
+
+def test_activity_events_exclude_welcome_and_ambient():
+    assert EventType.FEED in ACTIVITY_EVENTS
+    assert EventType.COMMITTED in ACTIVITY_EVENTS
+    assert EventType.WELCOMED_BACK not in ACTIVITY_EVENTS
+    assert EventType.CPU_SPIKE not in ACTIVITY_EVENTS
+    assert EventType.NIGHTFALL not in ACTIVITY_EVENTS
