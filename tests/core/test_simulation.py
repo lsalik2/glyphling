@@ -81,3 +81,56 @@ def test_mood_sleeping_and_hungry():
     s2.needs["fullness"] = 5.0
     advance(s2, 0, [], SPEC)
     assert s2.mood in ("hungry", "sick")
+
+def test_new_state_has_sleep_reason_and_ambient_defaults():
+    s = new_state()
+    assert s.sleep_reason == "none"
+    assert s.ambient_mood == "none"
+
+def test_rest_sets_manual_reason():
+    s = new_state()
+    advance(s, 0, [Event(EventType.REST)], SPEC)
+    assert s.asleep is True and s.sleep_reason == "manual"
+
+def test_nightfall_sleeps_circadian_morning_wakes():
+    s = new_state()
+    advance(s, 0, [Event(EventType.NIGHTFALL)], SPEC)
+    assert s.asleep is True and s.sleep_reason == "circadian"
+    advance(s, 0, [Event(EventType.MORNING)], SPEC)
+    assert s.asleep is False and s.sleep_reason == "none"
+
+def test_morning_does_not_wake_a_manual_nap():
+    s = new_state()
+    advance(s, 0, [Event(EventType.REST)], SPEC)
+    advance(s, 0, [Event(EventType.MORNING)], SPEC)
+    assert s.asleep is True and s.sleep_reason == "manual"
+
+def test_interaction_instantly_wakes_circadian_sleeper():
+    s = new_state()
+    advance(s, 0, [Event(EventType.NIGHTFALL)], SPEC)
+    advance(s, 0, [Event(EventType.PLAY)], SPEC)
+    assert s.asleep is False and s.sleep_reason == "none"
+
+def test_ambient_events_set_mood_without_waking_or_pumping_needs():
+    s = new_state()
+    advance(s, 0, [Event(EventType.NIGHTFALL)], SPEC)
+    before = dict(s.needs)
+    advance(s, 0, [Event(EventType.CPU_SPIKE)], SPEC)
+    assert s.ambient_mood == "excited"
+    assert s.asleep is True
+    assert s.needs == before
+    advance(s, 0, [Event(EventType.AMBIENT_CLEAR)], SPEC)
+    assert s.ambient_mood == "none"
+
+def test_ambient_mood_surfaces_when_awake_and_content():
+    s = new_state()
+    advance(s, 0, [Event(EventType.CPU_SPIKE)], SPEC)
+    assert s.mood == "excited"
+    advance(s, 0, [Event(EventType.LOW_BATTERY)], SPEC)
+    assert s.mood == "tired"
+
+def test_low_need_still_beats_ambient_mood():
+    s = new_state()
+    s.needs["fullness"] = 5.0
+    advance(s, 0, [Event(EventType.CPU_SPIKE)], SPEC)
+    assert s.mood == "hungry"

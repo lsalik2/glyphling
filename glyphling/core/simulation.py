@@ -4,7 +4,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from glyphling.core import balance
-from glyphling.core.events import Event, EventType, EVENT_EFFECTS, POSITIVE_BOND_EVENTS
+from glyphling.core.events import (
+    Event, EventType, EVENT_EFFECTS, POSITIVE_BOND_EVENTS, WAKING_EVENTS, AMBIENT_MOOD_EVENTS,
+)
 from glyphling.core.spec import CreatureSpec
 
 NEED_KEYS = ("fullness", "energy", "happiness", "cleanliness", "social")
@@ -32,6 +34,8 @@ class PetState:
     stage: str
     asleep: bool
     recent_events: list = field(default_factory=list)
+    sleep_reason: str = "none"     # "none" | "manual" | "circadian"
+    ambient_mood: str = "none"     # "none" | "excited" | "tired"  (set by vitals sensor)
 
 def new_state() -> PetState:
     return PetState(
@@ -69,29 +73,50 @@ def derive_mood(state: PetState, personality: dict) -> str:
             "cleanliness": Mood.GRUMPY,
             "happiness": Mood.SAD,
         }[worst].value
-    if state.recent_events and state.recent_events[-1] in (EventType.PLAY.value, EventType.PRAISE.value):
+    last = state.recent_events[-1] if state.recent_events else None
+    if last in (EventType.PLAY.value, EventType.PRAISE.value):
         if personality.get("energy", 0.0) > 0.3:
             return Mood.EXCITED.value
         return Mood.PLAYFUL.value
+    if state.ambient_mood == "excited":
+        return Mood.EXCITED.value
+    if state.ambient_mood == "tired":
+        return Mood.TIRED.value
     if all(state.needs[k] > 70.0 for k in NEED_KEYS):
         return Mood.HAPPY.value
     return Mood.CONTENT.value
 
 def _apply_event(state: PetState, event: Event, spec: CreatureSpec) -> None:
-    if event.type == EventType.REST:
-        state.asleep = not state.asleep
+    et = event.type
+    if et == EventType.REST:
+        if state.asleep:
+            state.asleep, state.sleep_reason = False, "none"
+        else:
+            state.asleep, state.sleep_reason = True, "manual"
         return
-    effects = EVENT_EFFECTS.get(event.type, {})
+    if et == EventType.NIGHTFALL:
+        state.asleep, state.sleep_reason = True, "circadian"
+        return
+    if et == EventType.MORNING:
+        if state.sleep_reason == "circadian":
+            state.asleep, state.sleep_reason = False, "none"
+        return
+    if et in AMBIENT_MOOD_EVENTS:
+        state.ambient_mood = AMBIENT_MOOD_EVENTS[et]
+        return
+    # Deliberate, need-affecting interactions.
+    effects = EVENT_EFFECTS.get(et, {})
     for need, delta in effects.items():
         if delta > 0:
             applied = delta * (1.0 - state.needs[need] / balance.NEED_MAX)  # diminishing returns
         else:
             applied = delta
         state.needs[need] = _clamp_need(state.needs[need] + applied)
-    if event.type in POSITIVE_BOND_EVENTS:
+    if et in POSITIVE_BOND_EVENTS:
         state.bond = min(balance.BOND_MAX, state.bond + balance.BOND_PER_POSITIVE)
-    state.asleep = False
-    state.recent_events.append(event.type.value)
+    if et in WAKING_EVENTS:
+        state.asleep, state.sleep_reason = False, "none"
+    state.recent_events.append(et.value)
     state.recent_events[:] = state.recent_events[-5:]
 
 def advance(state: PetState, elapsed_seconds: float, events: list, spec: CreatureSpec) -> PetState:
