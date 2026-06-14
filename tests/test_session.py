@@ -76,3 +76,30 @@ def test_reader_mode_tick_reloads_disk_state(tmp_path):
     store.save(path, spec, state, now=clock())
     session.tick()
     assert session.state.needs["fullness"] == 3.0
+
+def test_render_frame_shows_live_reaction_bubble(tmp_path):
+    clock = FakeClock(1000.0)
+    session = PetSession.start(tmp_path / "pet.json", clock=clock, seed=7)
+    session.state.reaction_text = "yesss!"
+    session.state.reaction_mood = "excited"
+    session.state.reaction_expires_at = 1005.0            # clock() = 1000 < 1005 -> live
+    art = session.render_frame(0)
+    assert "( yesss! )" in art
+
+def test_render_frame_hides_expired_reaction(tmp_path):
+    clock = FakeClock(1000.0)
+    session = PetSession.start(tmp_path / "pet.json", clock=clock, seed=7)
+    session.state.reaction_text = "yesss!"
+    session.state.reaction_mood = "excited"
+    session.state.reaction_expires_at = 999.0             # already expired
+    art = session.render_frame(0)
+    assert "yesss" not in art
+
+def test_render_frame_no_bubble_while_asleep(tmp_path):
+    clock = FakeClock(1000.0)
+    session = PetSession.start(tmp_path / "pet.json", clock=clock, seed=7)
+    session.state.asleep = True
+    session.state.reaction_text = "yesss!"
+    session.state.reaction_expires_at = 1005.0
+    art = session.render_frame(0)
+    assert "yesss" not in art

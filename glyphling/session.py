@@ -65,4 +65,7 @@ class PetSession:
             store.save(self.path, self.spec, self.state, self.clock())
 
     def render_frame(self, frame_idx: int = 0) -> str:
-        return render(self.spec, self.state.mood, frame_idx)
+        st = self.state
+        if st.reaction_text and not st.asleep and self.clock() < st.reaction_expires_at:
+            return render(self.spec, st.reaction_mood, frame_idx, speech=st.reaction_text)
+        return render(self.spec, st.mood, frame_idx)
