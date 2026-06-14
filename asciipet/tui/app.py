@@ -35,8 +35,8 @@ class AsciiPetApp(App):
         self.frame = 0
 
     def compose(self) -> ComposeResult:
-        yield Static(id="pet")
-        yield Static(id="stats")
+        yield Static(id="pet", markup=False)
+        yield Static(id="stats", markup=False)
         yield Footer()
 
     def on_mount(self) -> None:

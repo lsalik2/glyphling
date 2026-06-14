@@ -23,3 +23,16 @@ async def test_widgets_present(tmp_path):
     async with app.run_test():
         assert app.query_one("#pet") is not None
         assert app.query_one("#stats") is not None
+
+@pytest.mark.asyncio
+async def test_name_with_markup_renders_literally(tmp_path):
+    import dataclasses
+    from textual.widgets import Static
+    session = PetSession.start(tmp_path / "pet.json", clock=FakeClock(), seed=7)
+    session.spec = dataclasses.replace(session.spec, name="[red]Boom[/]")
+    app = AsciiPetApp(session)
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        stats = app.query_one("#stats", Static)
+        content = str(stats.visual)
+        assert "[red]Boom[/]" in content   # literal brackets preserved, not interpreted
