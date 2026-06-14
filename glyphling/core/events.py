@@ -8,6 +8,12 @@ class EventType(str, Enum):
     REST = "rest"       # toggles sleep; handled specially in advance
     PRAISE = "praise"
     RENAME = "rename"   # changes spec.name; handled by the session, not advance
+    # --- Phase 2 sensor events ---
+    NIGHTFALL = "nightfall"     # circadian: time to sleep
+    MORNING = "morning"         # circadian: time to wake
+    CPU_SPIKE = "cpu_spike"     # ambient: machine busy
+    LOW_BATTERY = "low_battery" # ambient: low power
+    AMBIENT_CLEAR = "ambient_clear"  # ambient: nothing notable
 
 @dataclass(frozen=True)
 class Event:
@@ -23,3 +29,19 @@ EVENT_EFFECTS = {
 }
 
 POSITIVE_BOND_EVENTS = {EventType.PRAISE, EventType.PLAY}
+
+# Deliberate interactions that wake the pet and bump needs/bond.
+WAKING_EVENTS = {EventType.FEED, EventType.PLAY, EventType.CLEAN, EventType.PRAISE}
+
+# Ambient sensor events set a transient mood tint (never pump needs, never wake).
+AMBIENT_MOOD_EVENTS = {
+    EventType.CPU_SPIKE: "excited",
+    EventType.LOW_BATTERY: "tired",
+    EventType.AMBIENT_CLEAR: "none",
+}
+
+def event_to_dict(event: "Event") -> dict:
+    return {"type": event.type.value, "payload": event.payload}
+
+def event_from_dict(d: dict) -> "Event":
+    return Event(EventType(d["type"]), dict(d.get("payload") or {}))
