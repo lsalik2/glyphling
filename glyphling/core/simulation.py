@@ -6,6 +6,7 @@ from enum import Enum
 from glyphling.core import balance
 from glyphling.core.events import (
     Event, EventType, EVENT_EFFECTS, POSITIVE_BOND_EVENTS, WAKING_EVENTS, AMBIENT_MOOD_EVENTS,
+    DEV_REACTION_EVENTS, WIN_EVENTS,
 )
 from glyphling.core.spec import CreatureSpec
 
@@ -23,6 +24,7 @@ class Mood(str, Enum):
     SAD = "sad"
     SICK = "sick"
     SLEEPING = "sleeping"
+    STARTLED = "startled"
 
 @dataclass
 class PetState:
@@ -36,6 +38,10 @@ class PetState:
     recent_events: list = field(default_factory=list)
     sleep_reason: str = "none"     # "none" | "manual" | "circadian"
     ambient_mood: str = "none"     # "none" | "excited" | "tired"  (set by vitals sensor)
+    reaction_text: str = ""        # transient speech-bubble line ("" = none)
+    reaction_mood: str = "none"    # pose to show while a reaction is live
+    reaction_expires_at: float = 0.0  # epoch; bubble shows while clock() < this
+    last_active_at: float = 0.0    # epoch of last real activity (presence)
 
 def new_state() -> PetState:
     return PetState(
@@ -105,6 +111,10 @@ def _apply_event(state: PetState, event: Event, spec: CreatureSpec) -> None:
     if et in AMBIENT_MOOD_EVENTS:
         state.ambient_mood = AMBIENT_MOOD_EVENTS[et]
         return
+    if et in DEV_REACTION_EVENTS:
+        if not state.asleep and et in WIN_EVENTS:
+            state.bond = min(balance.BOND_MAX, state.bond + balance.DEV_BOND)
+        return  # cosmetic-only: no needs, no recent_events, no wake (daemon stamps the bubble)
     # Deliberate, need-affecting interactions.
     effects = EVENT_EFFECTS.get(et, {})
     for need, delta in effects.items():

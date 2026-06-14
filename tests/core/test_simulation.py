@@ -143,3 +143,32 @@ def test_nightfall_does_not_override_a_manual_nap():
     assert s.sleep_reason == "manual"                    # still a manual nap, not circadian
     advance(s, 0, [Event(EventType.MORNING)], SPEC)     # daybreak
     assert s.asleep is True and s.sleep_reason == "manual"  # manual nap survives
+
+def test_new_state_has_reaction_and_activity_defaults():
+    s = new_state()
+    assert s.reaction_text == "" and s.reaction_mood == "none"
+    assert s.reaction_expires_at == 0.0 and s.last_active_at == 0.0
+
+def test_win_event_bumps_bond_when_awake():
+    s = new_state()
+    before = s.bond
+    advance(s, 0, [Event(EventType.COMMITTED)], SPEC)
+    assert s.bond > before
+
+def test_non_win_dev_event_changes_no_stats():
+    s = new_state()
+    needs_before, bond_before = dict(s.needs), s.bond
+    advance(s, 0, [Event(EventType.TESTS_FAILED), Event(EventType.STARTLED)], SPEC)
+    assert s.needs == needs_before and s.bond == bond_before
+
+def test_dev_events_do_not_pollute_recent_events_or_wake():
+    s = new_state()
+    advance(s, 0, [Event(EventType.NIGHTFALL)], SPEC)      # asleep, circadian
+    advance(s, 0, [Event(EventType.COMMITTED)], SPEC)
+    assert s.asleep is True                                 # dev event did not wake it
+    assert s.bond == 0.0                                    # asleep -> no bond
+    assert "committed" not in s.recent_events
+
+def test_startled_mood_value_exists():
+    from glyphling.core.simulation import Mood
+    assert Mood.STARTLED.value == "startled"
