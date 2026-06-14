@@ -10,3 +10,11 @@ def test_stage_thresholds_ascending():
 
 def test_health_floor_below_max():
     assert 0 < balance.HEALTH_FLOOR < balance.HEALTH_MAX
+
+def test_phase2_constants_present_and_sane():
+    assert balance.DAEMON_INTERVAL_SECONDS > 0
+    assert balance.DAEMON_STALE_SECONDS > balance.DAEMON_INTERVAL_SECONDS
+    assert 0 <= balance.DAY_START < balance.DAY_END <= 24
+    assert 0 <= balance.CREP_NAP_START < balance.CREP_NAP_END <= 24
+    assert 0 < balance.HIGH_CPU_PCT <= 100
+    assert 0 < balance.LOW_BATTERY_PCT <= 100

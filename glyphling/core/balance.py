@@ -43,3 +43,17 @@ STAGE_THRESHOLDS_HOURS = [
 
 # Catch-up clamp: never apply more than this much elapsed time at once (kindness cap).
 CATCHUP_MAX_SECONDS = 14 * 24 * 3600
+
+# --- Phase 2: daemon & sensors ---
+DAEMON_INTERVAL_SECONDS = 10.0    # daemon tick cadence
+DAEMON_STALE_SECONDS = 30.0       # a lock older than this => daemon considered dead
+
+# Circadian sleep windows, in local clock hours [start, end).
+DAY_START = 7                     # diurnal pets are awake from DAY_START
+DAY_END = 21                      # ...until DAY_END
+CREP_NAP_START = 11               # crepuscular pets nap midday
+CREP_NAP_END = 15
+
+# Vitals thresholds.
+HIGH_CPU_PCT = 80.0               # sustained CPU at/above this -> "excited"
+LOW_BATTERY_PCT = 20.0            # battery below this (and unplugged) -> "tired"
