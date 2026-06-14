@@ -57,3 +57,8 @@ CREP_NAP_END = 15
 # Vitals thresholds.
 HIGH_CPU_PCT = 80.0               # sustained CPU at/above this -> "excited"
 LOW_BATTERY_PCT = 20.0            # battery below this (and unplugged) -> "tired"
+
+# --- Phase 3: dev reactions & presence ---
+REACTION_TTL = 6.0                 # seconds a reaction speech bubble stays up
+AWAY_THRESHOLD_SECONDS = 30 * 60   # idle gap that counts as "away" -> welcome-back on return
+DEV_BOND = 0.5                     # tiny bond bump on a dev "win"

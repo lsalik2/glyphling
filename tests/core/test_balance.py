@@ -18,3 +18,8 @@ def test_phase2_constants_present_and_sane():
     assert 0 <= balance.CREP_NAP_START < balance.CREP_NAP_END <= 24
     assert 0 < balance.HIGH_CPU_PCT <= 100
     assert 0 < balance.LOW_BATTERY_PCT <= 100
+
+def test_phase3_constants_present_and_sane():
+    assert balance.REACTION_TTL > 0
+    assert balance.AWAY_THRESHOLD_SECONDS >= 60
+    assert 0 < balance.DEV_BOND <= balance.BOND_PER_POSITIVE
