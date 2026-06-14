@@ -29,3 +29,55 @@ def test_needs_clamp_at_zero():
     s = new_state()
     advance(s, elapsed_seconds=10_000_000, events=[], spec=SPEC)
     assert all(v >= 0.0 for v in s.needs.values())
+
+def test_feed_raises_fullness_with_diminishing_returns():
+    s = new_state()
+    s.needs["fullness"] = 0.0
+    advance(s, 0, [Event(EventType.FEED)], SPEC)
+    big = s.needs["fullness"]
+    s.needs["fullness"] = 90.0
+    advance(s, 0, [Event(EventType.FEED)], SPEC)
+    small_gain = s.needs["fullness"] - 90.0
+    assert big > 20.0          # near-empty feed gives most of +25
+    assert small_gain < 5.0    # nearly-full feed gives little
+
+def test_rest_toggles_sleep_and_energy_recovers():
+    s = new_state()
+    advance(s, 0, [Event(EventType.REST)], SPEC)
+    assert s.asleep is True
+    s.needs["energy"] = 40.0
+    advance(s, 3600, [], SPEC)             # one hour asleep
+    assert s.needs["energy"] > 40.0
+
+def test_health_never_below_floor():
+    s = new_state()
+    for _ in range(50):
+        advance(s, 86_400, [], SPEC)       # 50 days of total neglect
+    from asciipet.core import balance
+    assert s.health >= balance.HEALTH_FLOOR
+    assert s.health > 0                     # cannot die
+
+def test_health_regenerates_when_cared_for():
+    s = new_state()
+    advance(s, 86_400 * 5, [], SPEC)        # neglect -> low health
+    low = s.health
+    for _ in range(5):                      # top everything up
+        for k in NEED_KEYS:
+            s.needs[k] = 100.0
+        advance(s, 3600, [], SPEC)
+    assert s.health > low
+
+def test_praise_raises_bond():
+    s = new_state()
+    before = s.bond
+    advance(s, 0, [Event(EventType.PRAISE)], SPEC)
+    assert s.bond > before
+
+def test_mood_sleeping_and_hungry():
+    s = new_state()
+    advance(s, 0, [Event(EventType.REST)], SPEC)
+    assert s.mood == "sleeping"
+    s2 = new_state()
+    s2.needs["fullness"] = 5.0
+    advance(s2, 0, [], SPEC)
+    assert s2.mood in ("hungry", "sick")
