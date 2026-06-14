@@ -7,16 +7,19 @@ from pathlib import Path
 
 from glyphling import store, coord
 from glyphling.core import balance
-from glyphling.core.events import event_from_dict
+from glyphling.core.events import event_from_dict, Event, EventType, ACTIVITY_EVENTS
+from glyphling.core.reactions import reaction_for
 from glyphling.engine import apply_events
 
-def default_sensors():
+def default_sensors(path):
     from glyphling.sensors.clock import ClockSensor
     from glyphling.sensors.vitals import VitalsSensor
-    return [ClockSensor(), VitalsSensor()]
+    from glyphling.sensors.shell import ShellSensor
+    return [ClockSensor(), VitalsSensor(), ShellSensor(path)]
 
 def tick_once(path, clock, sensors) -> None:
-    """One daemon iteration: heartbeat, gather queued + sensor events, advance, persist."""
+    """One daemon iteration: heartbeat, gather queued + sensor events, apply, stamp the
+    transient reaction + presence, persist."""
     now = clock()
     coord.write_heartbeat(path, os.getpid(), now)
     spec, state, last_tick = store.load(path)
@@ -24,14 +27,34 @@ def tick_once(path, clock, sensors) -> None:
     events = [event_from_dict(d) for d in coord.drain_events(path)]
     for sensor in sensors:
         events.extend(sensor.poll(now, spec, state))
+
+    # Presence: fresh activity after a long idle gap -> welcome back.
+    activity = any(e.type in ACTIVITY_EVENTS for e in events)
+    was_away = state.last_active_at > 0 and (now - state.last_active_at) > balance.AWAY_THRESHOLD_SECONDS
+    if activity and was_away and not state.asleep:
+        events.append(Event(EventType.WELCOMED_BACK))
+
     spec, state = apply_events(spec, state, elapsed, events)
+
+    if activity:
+        state.last_active_at = now
+
+    # Stamp the visible reaction transient: the latest reaction-producing event wins.
+    if not state.asleep:
+        for ev in reversed(events):
+            r = reaction_for(ev.type, spec, salt=int(now))
+            if r is not None:
+                state.reaction_text, state.reaction_mood = r
+                state.reaction_expires_at = now + balance.REACTION_TTL
+                break
+
     store.save(path, spec, state, now)
 
 def run(path, clock=None, interval=None, sensors=None) -> None:
     """Foreground tick loop until SIGTERM/SIGINT. Clears the lock on exit."""
     clock = clock or time.time
     interval = interval if interval is not None else balance.DAEMON_INTERVAL_SECONDS
-    sensors = sensors if sensors is not None else default_sensors()
+    sensors = sensors if sensors is not None else default_sensors(path)
     store.load_or_hatch(path, clock())
     flag = {"running": True}
     def _stop(*_a):
