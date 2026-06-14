@@ -1,5 +1,5 @@
 import pytest
-from asciipet.core.spec import Archetype, Circadian, Species, Body, CreatureSpec
+from glyphling.core.spec import Archetype, Circadian, Species, Body, CreatureSpec
 
 def _sample_spec():
     species = Species(Archetype.BLOB, "omnivore", Circadian.DIURNAL, 1.0, "purr", 1.0)

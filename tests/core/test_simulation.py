@@ -1,8 +1,8 @@
-from asciipet.core.simulation import (
+from glyphling.core.simulation import (
     PetState, Mood, NEED_KEYS, new_state, stage_for_age, advance, derive_mood,
 )
-from asciipet.core.generator import generate
-from asciipet.core.events import Event, EventType
+from glyphling.core.generator import generate
+from glyphling.core.events import Event, EventType
 
 SPEC = generate(42)
 
@@ -53,7 +53,7 @@ def test_health_never_below_floor():
     s = new_state()
     for _ in range(50):
         advance(s, 86_400, [], SPEC)       # 50 days of total neglect
-    from asciipet.core import balance
+    from glyphling.core import balance
     assert s.health >= balance.HEALTH_FLOOR
     assert s.health > 0                     # cannot die
 

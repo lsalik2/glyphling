@@ -1,5 +1,5 @@
-from asciipet.core.generator import generate
-from asciipet.core.renderer import render
+from glyphling.core.generator import generate
+from glyphling.core.renderer import render
 
 def test_render_uses_base_face_when_content():
     spec = generate(42)

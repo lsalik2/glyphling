@@ -1,6 +1,6 @@
-from asciipet import store
-from asciipet.core.generator import generate
-from asciipet.core.simulation import new_state
+from glyphling import store
+from glyphling.core.generator import generate
+from glyphling.core.simulation import new_state
 
 def test_save_load_roundtrip(tmp_path):
     path = tmp_path / "pet.json"

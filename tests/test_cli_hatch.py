@@ -1,5 +1,5 @@
 # tests/test_cli_hatch.py
-from asciipet.cli import main
+from glyphling.cli import main
 
 def test_hatch_prints_creature(capsys):
     main(["hatch", "42"])

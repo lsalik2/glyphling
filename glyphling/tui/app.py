@@ -1,10 +1,10 @@
-# asciipet/tui/app.py
+# glyphling/tui/app.py
 from textual.app import App, ComposeResult
 from textual.screen import ModalScreen
 from textual.widgets import Static, Footer, Input
 
-from asciipet.core.events import EventType
-from asciipet.core.simulation import NEED_KEYS
+from glyphling.core.events import EventType
+from glyphling.core.simulation import NEED_KEYS
 
 def _bar(value: float, width: int = 10) -> str:
     filled = int(round(max(0.0, min(100.0, value)) / 100 * width))
@@ -17,7 +17,7 @@ class RenameScreen(ModalScreen):
     def on_input_submitted(self, event: Input.Submitted) -> None:
         self.dismiss(event.value.strip())
 
-class AsciiPetApp(App):
+class GlyphlingApp(App):
     CSS = "#pet { height: auto; padding: 1 2; } #stats { height: auto; padding: 0 2; }"
     BINDINGS = [
         ("f", "feed", "Feed"),

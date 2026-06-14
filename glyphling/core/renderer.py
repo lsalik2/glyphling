@@ -1,5 +1,5 @@
-from asciipet.core.spec import CreatureSpec
-from asciipet.core import parts
+from glyphling.core.spec import CreatureSpec
+from glyphling.core import parts
 
 def _add_sleep_z(art: str, frame_idx: int) -> str:
     z = ["  z", "   z", "  Z"][frame_idx % 3]

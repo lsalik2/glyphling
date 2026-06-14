@@ -2,10 +2,10 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 
-from asciipet import store
-from asciipet.core.events import Event, EventType
-from asciipet.core.renderer import render
-from asciipet.core.simulation import advance
+from glyphling import store
+from glyphling.core.events import Event, EventType
+from glyphling.core.renderer import render
+from glyphling.core.simulation import advance
 
 class PetSession:
     """Controller that ties the pure core to disk via an injectable clock."""

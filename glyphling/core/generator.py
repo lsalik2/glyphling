@@ -1,6 +1,6 @@
 import random
-from asciipet.core.spec import Archetype, Circadian, Species, Body, CreatureSpec
-from asciipet.core import parts
+from glyphling.core.spec import Archetype, Circadian, Species, Body, CreatureSpec
+from glyphling.core import parts
 
 def _make_name(rng: random.Random) -> str:
     name = rng.choice(parts.NAME_ONSETS) + rng.choice(parts.NAME_VOWELS) + rng.choice(parts.NAME_CODAS)

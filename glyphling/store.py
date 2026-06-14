@@ -4,10 +4,10 @@ import random
 import shutil
 from pathlib import Path
 
-from asciipet.core.spec import Archetype, Circadian, Species, Body, CreatureSpec
-from asciipet.core.simulation import PetState, advance, new_state
-from asciipet.core.generator import generate
-from asciipet.core import balance
+from glyphling.core.spec import Archetype, Circadian, Species, Body, CreatureSpec
+from glyphling.core.simulation import PetState, advance, new_state
+from glyphling.core.generator import generate
+from glyphling.core import balance
 
 def spec_to_dict(spec: CreatureSpec) -> dict:
     return {

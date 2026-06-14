@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "asciipet"
+name = "glyphling"
 version = "0.1.0"
 description = "A procedurally-generated, interactive ASCII pet that lives in your terminal"
 requires-python = ">=3.11"
@@ -13,10 +13,10 @@ dependencies = ["textual>=0.50"]
 dev = ["pytest>=8", "pytest-asyncio>=0.23"]
 
 [project.scripts]
-asciipet = "asciipet.cli:main"
+glyphling = "glyphling.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["asciipet"]
+packages = ["glyphling"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

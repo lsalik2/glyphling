@@ -1,6 +1,6 @@
-from asciipet.session import PetSession
-from asciipet.core.events import EventType
-from asciipet.core.generator import generate
+from glyphling.session import PetSession
+from glyphling.core.events import EventType
+from glyphling.core.generator import generate
 
 class FakeClock:
     def __init__(self, t=1000.0): self.t = t

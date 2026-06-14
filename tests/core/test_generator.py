@@ -1,6 +1,6 @@
-from asciipet.core.generator import generate
-from asciipet.core.spec import Archetype
-from asciipet.core import parts
+from glyphling.core.generator import generate
+from glyphling.core.spec import Archetype
+from glyphling.core import parts
 
 def test_same_seed_is_deterministic():
     assert generate(12345) == generate(12345)

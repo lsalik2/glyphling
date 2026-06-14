@@ -1,11 +1,11 @@
-# asciipet/core/simulation.py
+# glyphling/core/simulation.py
 from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 
-from asciipet.core import balance
-from asciipet.core.events import Event, EventType, EVENT_EFFECTS, POSITIVE_BOND_EVENTS
-from asciipet.core.spec import CreatureSpec
+from glyphling.core import balance
+from glyphling.core.events import Event, EventType, EVENT_EFFECTS, POSITIVE_BOND_EVENTS
+from glyphling.core.spec import CreatureSpec
 
 NEED_KEYS = ("fullness", "energy", "happiness", "cleanliness", "social")
 

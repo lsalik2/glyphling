@@ -1,4 +1,4 @@
-from asciipet.core.events import EventType, Event, EVENT_EFFECTS, POSITIVE_BOND_EVENTS
+from glyphling.core.events import EventType, Event, EVENT_EFFECTS, POSITIVE_BOND_EVENTS
 
 def test_user_actions_have_effects_or_special_handling():
     assert EVENT_EFFECTS[EventType.FEED]["fullness"] > 0

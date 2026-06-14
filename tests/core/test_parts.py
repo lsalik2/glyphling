@@ -1,4 +1,4 @@
-from asciipet.core import parts
+from glyphling.core import parts
 
 def test_every_archetype_has_a_template():
     for archetype in ("blob", "critter"):

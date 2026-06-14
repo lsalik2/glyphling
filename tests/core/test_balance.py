@@ -1,4 +1,4 @@
-from asciipet.core import balance
+from glyphling.core import balance
 
 def test_decay_rates_present_and_positive():
     for key in ("fullness", "energy", "happiness", "cleanliness", "social"):

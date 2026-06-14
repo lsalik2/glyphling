@@ -2,21 +2,19 @@
 
 A procedurally-generated, interactive ASCII pet that lives in your terminal — a one-of-a-kind creature you care for that reacts to your real dev life.
 
-> **Note:** the project is named **glyphling**, but the CLI command is currently `asciipet` (the rename to `glyphling` is on the roadmap below).
-
 ## Install
 ```
 pip install -e ".[dev]"
 ```
 
 ## Use
-- `asciipet hatch 42` — preview the creature a seed produces
-- `asciipet` — hatch (first run) and open your pet's live view
-- `asciipet rename Pixel` — rename your pet
+- `glyphling hatch 42` — preview the creature a seed produces
+- `glyphling` — hatch (first run) and open your pet's live view
+- `glyphling rename Pixel` — rename your pet
 
 In the live view: **f** feed · **p** play · **c** clean · **r** rest · **e** pet · **n** rename · **q** quit.
 
-Your pet is saved at `$XDG_DATA_HOME/asciipet/pet.json` and keeps living (gently) while you're away.
+Your pet is saved at `$XDG_DATA_HOME/glyphling/pet.json` and keeps living (gently) while you're away.
 
 ## Roadmap
 
@@ -27,9 +25,9 @@ glyphling grows in layers — each phase stands on its own, so it's always a who
 - Care simulation — five needs, derived moods, life stages, bond; *suffers but survives* (it can never die)
 - Real-time decay with offline catch-up, saved between sessions
 - Animated Textual TUI — feed · play · clean · rest · pet · rename
+- Named the project **glyphling** (package, CLI, and repo)
 
 **⏳ Next up**
-- Rename `asciipet` → `glyphling` (package, CLI, repo)
 - **Phase 2 · "it lives on its own"** — a lightweight background daemon plus zero-setup ambient sensors (system vitals, time-of-day & circadian rhythm), so your pet keeps living — sleeping at night, stirring by day — even when the window's closed
 
 **🗺️ Planned**
