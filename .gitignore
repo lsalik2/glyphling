@@ -1,0 +1,22 @@
+# Brainstorming artifacts (design specs, implementation plans) — kept local, not committed
+docs/superpowers/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# OS / editor cruft
+.DS_Store
+*.swp
+.idea/
+.vscode/
