@@ -55,3 +55,45 @@ def main(argv=None) -> None:
 
 if __name__ == "__main__":
     main()
+
+def status(path, now) -> bool:
+    return coord.is_daemon_alive(path, now)
+
+def print_status(path, now=None) -> None:
+    now = time.time() if now is None else now
+    lock = coord.read_lock(path)
+    if status(path, now):
+        print(f"glyphling daemon running (pid {lock['pid']})")
+    else:
+        print("glyphling daemon not running")
+
+def stop(path, now=None) -> None:
+    now = time.time() if now is None else now
+    lock = coord.read_lock(path)
+    if not lock:
+        print("glyphling daemon not running")
+        return
+    try:
+        os.kill(lock["pid"], signal.SIGTERM)
+        print("stopping glyphling daemon")
+    except (ProcessLookupError, PermissionError, OSError):
+        coord.clear_lock(path)
+        print("glyphling daemon not running (cleared stale lock)")
+
+def start(path, interval=None) -> None:
+    if status(path, time.time()):
+        print("glyphling daemon already running")
+        return
+    pid = os.fork()
+    if pid > 0:
+        print("glyphling daemon started")
+        return
+    # child: detach and run the loop, logging to daemon.log
+    os.setsid()
+    log = open(Path(path).with_name("daemon.log"), "a")
+    os.dup2(log.fileno(), 1)
+    os.dup2(log.fileno(), 2)
+    try:
+        run(path, interval=interval)
+    finally:
+        os._exit(0)

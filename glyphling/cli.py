@@ -25,6 +25,16 @@ def _cmd_rename(name: str) -> None:
     session.action(EventType.RENAME, {"name": name})
     print(f"Renamed to {name}")
 
+def _cmd_daemon(action: str) -> None:
+    from glyphling import daemon
+    path = default_state_path()
+    if action == "start":
+        daemon.start(path)
+    elif action == "stop":
+        daemon.stop(path)
+    else:
+        daemon.print_status(path)
+
 def _cmd_run() -> None:
     from glyphling.session import PetSession
     from glyphling.tui.app import GlyphlingApp
@@ -38,12 +48,16 @@ def main(argv=None) -> None:
     p_hatch.add_argument("seed", type=int)
     p_rename = sub.add_parser("rename", help="rename your pet")
     p_rename.add_argument("name")
+    p_daemon = sub.add_parser("daemon", help="background companion: start|stop|status")
+    p_daemon.add_argument("action", choices=["start", "stop", "status"])
     args = parser.parse_args(argv)
 
     if args.cmd == "hatch":
         _cmd_hatch(args.seed)
     elif args.cmd == "rename":
         _cmd_rename(args.name)
+    elif args.cmd == "daemon":
+        _cmd_daemon(args.action)
     else:
         _cmd_run()
 
