@@ -41,6 +41,7 @@ MOOD_FACE = {
     "sad":      ("x x", "n"),
     "sick":     ("@ @", "~"),
     "sleeping": ("- -", "u"),
+    "startled": ("O O", "O"),
 }
 
 # Deterministic cute-name syllables.

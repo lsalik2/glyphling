@@ -24,3 +24,19 @@ def test_sleeping_shows_z():
 def test_render_is_deterministic():
     spec = generate(42)
     assert render(spec, "content", 1) == render(spec, "content", 1)
+
+def test_startled_face_renders():
+    spec = generate(42)
+    art = render(spec, "startled", frame_idx=0)
+    assert "O O" in art          # startled wide eyes
+
+def test_speech_bubble_renders_above_the_pet():
+    spec = generate(42)
+    art = render(spec, "excited", frame_idx=0, speech="yesss!")
+    assert "( yesss! )" in art
+    assert art.splitlines()[0].strip() == "( yesss! )"
+
+def test_no_speech_means_no_bubble():
+    spec = generate(42)
+    art = render(spec, "content", frame_idx=0)
+    assert "yesss" not in art
