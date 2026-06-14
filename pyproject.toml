@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "asciipet"
+version = "0.1.0"
+description = "A procedurally-generated, interactive ASCII pet that lives in your terminal"
+requires-python = ">=3.11"
+dependencies = ["textual>=0.50"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[project.scripts]
+asciipet = "asciipet.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["asciipet"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
