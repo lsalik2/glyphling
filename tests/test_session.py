@@ -42,3 +42,37 @@ def test_render_frame_returns_art(tmp_path):
     session = PetSession.start(tmp_path / "pet.json", clock=clock, seed=7)
     art = session.render_frame(0)
     assert isinstance(art, str) and "\n" in art
+
+from glyphling import coord
+
+def test_owner_mode_when_no_daemon_still_advances(tmp_path):
+    clock = FakeClock()
+    session = PetSession.start(tmp_path / "pet.json", clock=clock, seed=7)
+    session.state.needs["fullness"] = 10.0
+    session.action(EventType.FEED)
+    assert session.state.needs["fullness"] > 10.0
+
+def test_reader_mode_queues_action_instead_of_advancing(tmp_path):
+    path = tmp_path / "pet.json"
+    clock = FakeClock()
+    PetSession.start(path, clock=clock, seed=7)                 # create pet on disk (owner)
+    coord.write_heartbeat(path, pid=99999, now=clock())        # pretend a daemon is live
+    session = PetSession.start(path, clock=clock, seed=7)
+    assert session.reader_mode is True
+    fullness_before = session.state.needs["fullness"]
+    session.action(EventType.FEED)
+    assert [d["type"] for d in coord.drain_events(path)] == ["feed"]
+    assert session.state.needs["fullness"] == fullness_before
+
+def test_reader_mode_tick_reloads_disk_state(tmp_path):
+    path = tmp_path / "pet.json"
+    clock = FakeClock()
+    PetSession.start(path, clock=clock, seed=7)
+    coord.write_heartbeat(path, pid=99999, now=clock())
+    session = PetSession.start(path, clock=clock, seed=7)
+    from glyphling import store
+    spec, state, _ = store.load(path)
+    state.needs["fullness"] = 3.0
+    store.save(path, spec, state, now=clock())
+    session.tick()
+    assert session.state.needs["fullness"] == 3.0

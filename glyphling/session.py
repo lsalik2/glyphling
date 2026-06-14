@@ -1,14 +1,19 @@
+# glyphling/session.py
 from __future__ import annotations
-from dataclasses import replace
 from pathlib import Path
 
-from glyphling import store
-from glyphling.core.events import Event, EventType
+from glyphling import store, coord
+from glyphling.core.events import Event, EventType, event_to_dict
 from glyphling.core.renderer import render
-from glyphling.core.simulation import advance
+from glyphling.engine import apply_events
 
 class PetSession:
-    """Controller that ties the pure core to disk via an injectable clock."""
+    """Controller tying the pure core to disk via an injectable clock.
+
+    Owner mode (no live daemon): this session advances the sim and writes state.
+    Reader mode (a daemon is live): the daemon owns ticking; this session appends
+    user actions to the event queue and polls disk to display the daemon's state.
+    """
 
     def __init__(self, path, clock):
         self.path = Path(path)
@@ -20,9 +25,17 @@ class PetSession:
     @classmethod
     def start(cls, path, clock, seed: int | None = None) -> "PetSession":
         session = cls(path, clock)
-        session.spec, session.state = store.load_or_hatch(path, clock(), seed)
+        now = clock()
+        if coord.is_daemon_alive(path, now) and Path(path).exists():
+            session.spec, session.state, _ = store.load(path)     # reader: just load
+        else:
+            session.spec, session.state = store.load_or_hatch(path, now, seed)
         session._last = clock()
         return session
+
+    @property
+    def reader_mode(self) -> bool:
+        return coord.is_daemon_alive(self.path, self.clock())
 
     def _elapsed(self) -> float:
         now = self.clock()
@@ -30,16 +43,26 @@ class PetSession:
         self._last = now
         return dt
 
+    def _reload(self) -> None:
+        if self.path.exists():
+            self.spec, self.state, _ = store.load(self.path)
+        self._last = self.clock()
+
     def tick(self) -> None:
-        advance(self.state, self._elapsed(), [], self.spec)
-        store.save(self.path, self.spec, self.state, self.clock())
+        if self.reader_mode:
+            self._reload()
+        else:
+            self.spec, self.state = apply_events(self.spec, self.state, self._elapsed(), [])
+            store.save(self.path, self.spec, self.state, self.clock())
 
     def action(self, event_type: EventType, payload: dict | None = None) -> None:
-        if event_type == EventType.RENAME:
-            self.spec = replace(self.spec, name=(payload or {})["name"])
+        ev = Event(event_type, payload or {})
+        if self.reader_mode:
+            coord.append_event(self.path, event_to_dict(ev))
+            self._reload()
         else:
-            advance(self.state, self._elapsed(), [Event(event_type, payload or {})], self.spec)
-        store.save(self.path, self.spec, self.state, self.clock())
+            self.spec, self.state = apply_events(self.spec, self.state, self._elapsed(), [ev])
+            store.save(self.path, self.spec, self.state, self.clock())
 
     def render_frame(self, frame_idx: int = 0) -> str:
         return render(self.spec, self.state.mood, frame_idx)
