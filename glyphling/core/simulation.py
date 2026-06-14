@@ -95,7 +95,8 @@ def _apply_event(state: PetState, event: Event, spec: CreatureSpec) -> None:
             state.asleep, state.sleep_reason = True, "manual"
         return
     if et == EventType.NIGHTFALL:
-        state.asleep, state.sleep_reason = True, "circadian"
+        if state.sleep_reason != "manual":     # never clobber a manual nap
+            state.asleep, state.sleep_reason = True, "circadian"
         return
     if et == EventType.MORNING:
         if state.sleep_reason == "circadian":

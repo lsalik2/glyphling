@@ -134,3 +134,12 @@ def test_low_need_still_beats_ambient_mood():
     s.needs["fullness"] = 5.0
     advance(s, 0, [Event(EventType.CPU_SPIKE)], SPEC)
     assert s.mood == "hungry"
+
+def test_nightfall_does_not_override_a_manual_nap():
+    s = new_state()
+    advance(s, 0, [Event(EventType.REST)], SPEC)        # manual nap
+    assert s.sleep_reason == "manual"
+    advance(s, 0, [Event(EventType.NIGHTFALL)], SPEC)   # night falls during the nap
+    assert s.sleep_reason == "manual"                    # still a manual nap, not circadian
+    advance(s, 0, [Event(EventType.MORNING)], SPEC)     # daybreak
+    assert s.asleep is True and s.sleep_reason == "manual"  # manual nap survives
