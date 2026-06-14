@@ -36,3 +36,11 @@ async def test_name_with_markup_renders_literally(tmp_path):
         stats = app.query_one("#stats", Static)
         content = str(stats.visual)
         assert "[red]Boom[/]" in content   # literal brackets preserved, not interpreted
+
+@pytest.mark.asyncio
+async def test_animation_interval_does_not_crash(tmp_path):
+    session = PetSession.start(tmp_path / "pet.json", clock=FakeClock(), seed=7)
+    app = AsciiPetApp(session)
+    async with app.run_test() as pilot:
+        await pilot.pause(0.3)        # let the 0.25s animation interval fire
+        assert app._exception is None  # no callback raised

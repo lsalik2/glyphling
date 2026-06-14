@@ -40,11 +40,11 @@ class AsciiPetApp(App):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.set_interval(0.25, self._animate)
+        self.set_interval(0.25, self._animate_frame)
         self.set_interval(2.0, self._tick)
         self._refresh()
 
-    def _animate(self) -> None:
+    def _animate_frame(self) -> None:
         self.frame += 1
         self.query_one("#pet", Static).update(self.session.render_frame(self.frame))
 
