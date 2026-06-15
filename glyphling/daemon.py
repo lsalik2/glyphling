@@ -115,16 +115,23 @@ def start(path, interval=None) -> None:
     if status(path, time.time()):
         print("glyphling daemon already running")
         return
-    Path(path).parent.mkdir(parents=True, exist_ok=True)   # ensure state dir for log + state
+    coord.ensure_dir(Path(path).parent)   # ensure state dir (0700) for log + state
     pid = os.fork()
     if pid > 0:
         print("glyphling daemon started")
         return
-    # child: detach and run the loop, logging to daemon.log
+    # child: detach from the controlling terminal and run the loop, logging to daemon.log
     os.setsid()
-    log = open(Path(path).with_name("daemon.log"), "a")
+    log_path = Path(path).with_name("daemon.log")
+    log = open(log_path, "a")
+    coord.harden_file(log_path)
+    devnull = os.open(os.devnull, os.O_RDONLY)
+    os.dup2(devnull, 0)                    # detach stdin
     os.dup2(log.fileno(), 1)
     os.dup2(log.fileno(), 2)
+    os.close(devnull)
+    if log.fileno() > 2:
+        log.close()                       # fds 1/2 hold the file open; drop the extra handle
     try:
         run(path, interval=interval)
     finally:
