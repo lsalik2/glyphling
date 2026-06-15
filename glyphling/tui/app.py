@@ -5,6 +5,7 @@ from textual.widgets import Static, Footer, Input
 
 from glyphling.core.events import EventType
 from glyphling.core.simulation import NEED_KEYS
+from glyphling.core import balance
 
 def _bar(value: float, width: int = 10) -> str:
     filled = int(round(max(0.0, min(100.0, value)) / 100 * width))
@@ -58,7 +59,7 @@ class GlyphlingApp(App):
         lines = [f"{self.session.spec.name}  ({st.stage})   mood: {st.mood}"]
         for key in NEED_KEYS:
             lines.append(f"{key:<11}{_bar(st.needs[key])}")
-        lines.append(f"{'health':<11}{_bar(st.health)}   bond {_bar(st.bond)}")
+        lines.append(f"{'health':<11}{_bar(st.health)}   bond {_bar(st.bond)} {balance.bond_tier(st.bond)}")
         if self.session.reader_mode:
             lines.append("daemon: on (reacting to your dev life)")
         else:

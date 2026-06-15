@@ -69,3 +69,14 @@ async def test_animation_interval_does_not_crash(tmp_path):
     async with app.run_test() as pilot:
         await pilot.pause(0.3)        # let the 0.25s animation interval fire
         assert app._exception is None  # no callback raised
+
+@pytest.mark.asyncio
+async def test_stats_show_bond_tier(tmp_path):
+    from textual.widgets import Static
+    session = PetSession.start(tmp_path / "pet.json", clock=FakeClock(), seed=7)
+    session.state.bond = 0.0
+    app = GlyphlingApp(session)
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        content = str(app.query_one("#stats", Static).visual)
+        assert "stranger" in content
