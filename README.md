@@ -4,6 +4,8 @@ A procedurally-generated, interactive ASCII pet that lives in your terminal — 
 
 ## Install
 ```
+pipx install git+https://github.com/lsalik2/glyphling    # isolated, recommended
+# or, from a clone for development:
 pip install -e ".[dev]"
 ```
 
@@ -14,7 +16,9 @@ pip install -e ".[dev]"
 
 In the live view: **f** feed · **p** play · **c** clean · **r** rest · **e** pet · **n** rename · **q** quit.
 
-Your pet is saved at `$XDG_DATA_HOME/glyphling/pet.json` and keeps living (gently) while you're away.
+Your pet is saved at `$XDG_DATA_HOME/glyphling/pet.json` and keeps living (gently) while you're away. State is written atomically, with a `.bak` kept for recovery; the state directory and files are created user-only (`0700`/`0600`).
+
+> **One ticker at a time.** With no daemon running, the open live view ticks the simulation itself — so run a single view at a time (two owner-mode views would both tick and the last save would win). A running daemon is the single source of truth, and any number of views can safely watch it as readers.
 
 ### Keep it alive in the background (optional)
 - `glyphling daemon start` — run the companion in the background (it keeps living while the TUI is closed)
@@ -99,3 +103,7 @@ Directions glyphling could grow once the core is solid. Nothing scheduled — th
 - Async "visits" — send your creature to a friend's terminal
 - Collection & breeding with inherited traits; a small interacting household
 - A community gallery of seeds
+
+## License
+
+MIT — see [LICENSE](LICENSE).
