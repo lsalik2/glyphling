@@ -1,3 +1,5 @@
+import pytest
+
 from glyphling import store
 from glyphling.core.generator import generate
 from glyphling.core.simulation import new_state
@@ -32,3 +34,37 @@ def test_load_or_hatch_applies_catchup_decay(tmp_path):
     store.load_or_hatch(path, now=1000.0, seed=7)
     _, state = store.load_or_hatch(path, now=1000.0 + 3600 * 10)   # 10 hours later
     assert state.needs["fullness"] < 80.0
+
+def test_load_recovers_from_backup_when_state_corrupt(tmp_path):
+    path = tmp_path / "pet.json"
+    spec, state = generate(1), new_state()
+    store.save(path, spec, state, now=1000.0)
+    store.save(path, spec, state, now=2000.0)        # .bak now holds the 1000 version
+    path.write_text("{ this is not valid json ")     # live file corrupted (partial write)
+    _, _, last_tick = store.load(path)
+    assert last_tick == 1000.0                        # recovered from .bak
+
+def test_load_raises_when_neither_state_nor_backup_is_valid(tmp_path):
+    path = tmp_path / "pet.json"
+    path.write_text("garbage")                        # corrupt, no .bak at all
+    with pytest.raises(ValueError):
+        store.load(path)
+
+def test_failed_save_preserves_previous_state(tmp_path, monkeypatch):
+    path = tmp_path / "pet.json"
+    store.save(path, generate(1), new_state(), now=1000.0)   # good v1 on disk
+    import glyphling.store as store_mod
+    def boom(src, dst):
+        raise OSError("publish failed mid-save")
+    monkeypatch.setattr(store_mod.os, "replace", boom)
+    with pytest.raises(OSError):
+        store.save(path, generate(1), new_state(), now=2000.0)
+    monkeypatch.undo()
+    _, _, last_tick = store.load(path)
+    assert last_tick == 1000.0                        # a failed save never corrupts the live file
+
+def test_save_leaves_no_temp_file(tmp_path):
+    path = tmp_path / "pet.json"
+    store.save(path, generate(1), new_state(), now=1.0)
+    assert not (tmp_path / "pet.json.tmp").exists()
+    store.load(path)                                  # and the published file is valid

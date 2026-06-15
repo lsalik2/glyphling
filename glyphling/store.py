@@ -1,7 +1,7 @@
 import dataclasses
 import json
+import os
 import random
-import shutil
 from pathlib import Path
 
 from glyphling.core.spec import Archetype, Circadian, Species, Body, CreatureSpec
@@ -43,16 +43,34 @@ def spec_from_dict(d: dict) -> CreatureSpec:
     )
 
 def save(path, spec: CreatureSpec, state: PetState, now: float) -> None:
+    """Persist atomically: write a temp file, rotate the live file to `.bak`, then
+    os.replace the temp into place. A crash mid-save never leaves a partial pet.json,
+    and the previous good state survives in `.bak` for recovery."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    if path.exists():
-        shutil.copy2(path, path.with_name(path.name + ".bak"))
     data = {"spec": spec_to_dict(spec), "state": dataclasses.asdict(state), "last_tick": now}
-    path.write_text(json.dumps(data, indent=2))
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(json.dumps(data, indent=2))
+    if path.exists():
+        os.replace(path, path.with_name(path.name + ".bak"))   # keep last-good as .bak
+    os.replace(tmp, path)                                       # atomic publish
 
-def load(path):
+def _read(path) -> tuple:
     data = json.loads(Path(path).read_text())
     return spec_from_dict(data["spec"]), PetState(**data["state"]), data["last_tick"]
+
+def load(path):
+    """Load the pet, falling back to `.bak` if the live file is missing or corrupt
+    (a partial write, or the sub-millisecond window mid-save). Raises only if neither
+    the live file nor its backup yields valid state."""
+    path = Path(path)
+    try:
+        return _read(path)
+    except (OSError, ValueError, KeyError, TypeError):
+        bak = path.with_name(path.name + ".bak")
+        if bak.exists():
+            return _read(bak)
+        raise
 
 def load_or_hatch(path, now: float, seed: int | None = None):
     path = Path(path)
