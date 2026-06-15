@@ -101,6 +101,27 @@ def test_tick_once_welcomes_back_after_away_gap(tmp_path):
     assert st2.reaction_text != ""
     assert st2.last_active_at == clock()
 
+def test_tick_once_clears_an_expired_reaction(tmp_path):
+    path = tmp_path / "pet.json"
+    clock = FakeClock(1000.0)
+    spec, st = generate(7), new_state()
+    st.reaction_text, st.reaction_mood, st.reaction_expires_at = "yesss!", "excited", 1002.0
+    store.save(path, spec, st, now=clock())
+    clock.advance(10)                       # now=1010 > 1002 -> the bubble has expired
+    daemon.tick_once(path, clock, sensors=[])
+    _, s2, _ = store.load(path)
+    assert (s2.reaction_text, s2.reaction_mood, s2.reaction_expires_at) == ("", "none", 0.0)
+
+def test_tick_once_keeps_a_live_reaction(tmp_path):
+    path = tmp_path / "pet.json"
+    clock = FakeClock(1000.0)
+    spec, st = generate(7), new_state()
+    st.reaction_text, st.reaction_mood, st.reaction_expires_at = "yesss!", "excited", 1100.0
+    store.save(path, spec, st, now=clock())
+    daemon.tick_once(path, clock, sensors=[])   # now=1000 < 1100 -> still live
+    _, s2, _ = store.load(path)
+    assert s2.reaction_text == "yesss!"     # a still-live bubble is never cleared
+
 def test_tick_once_no_reaction_while_asleep(tmp_path):
     path = tmp_path / "pet.json"
     clock = FakeClock(1000.0)

@@ -44,13 +44,18 @@ def tick_once(path, clock, sensors) -> None:
         state.last_active_at = now
 
     # Stamp the visible reaction transient: the latest reaction-producing event wins.
+    stamped = False
     if not state.asleep:
         for ev in reversed(events):
             r = reaction_for(ev.type, spec, salt=int(now))
             if r is not None:
                 state.reaction_text, state.reaction_mood = r
                 state.reaction_expires_at = now + balance.REACTION_TTL
+                stamped = True
                 break
+    # Clear an expired transient so stale speech doesn't linger in pet.json.
+    if not stamped and state.reaction_text and now >= state.reaction_expires_at:
+        state.reaction_text, state.reaction_mood, state.reaction_expires_at = "", "none", 0.0
 
     store.save(path, spec, state, now)
 
