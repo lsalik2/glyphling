@@ -48,3 +48,12 @@ def test_speech_line_is_reserved_so_the_body_never_shifts():
     assert len(with_speech) == len(without)      # bubble pops in place, no layout shift
     assert with_speech[0].strip() == "( hi! )"
     assert without[0].strip() == ""              # top line reserved, blank when silent
+
+def test_upside_down_sleep_pose():
+    import dataclasses
+    from glyphling.core.generator import generate
+    from glyphling.core.renderer import render
+    upside = dataclasses.replace(generate(7), quirks=("sleeps upside-down", "hums to itself"))
+    assert "v v" in render(upside, "sleeping", frame_idx=0)        # inverted eyes
+    plain = dataclasses.replace(generate(7), quirks=("hums to itself", "collects pebbles"))
+    assert "v v" not in render(plain, "sleeping", frame_idx=0)

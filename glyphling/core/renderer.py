@@ -1,5 +1,5 @@
 from glyphling.core.spec import CreatureSpec
-from glyphling.core import parts
+from glyphling.core import parts, quirks
 
 def _add_sleep_z(art: str, frame_idx: int) -> str:
     z = ["  z", "   z", "  Z"][frame_idx % 3]
@@ -19,6 +19,9 @@ def render(spec: CreatureSpec, mood: str, frame_idx: int = 0, speech: str = "") 
     # Blink: every 4th frame while awake.
     if mood != "sleeping" and frame_idx % 4 == 3:
         eyes = "- -"
+
+    if mood == "sleeping" and quirks.has_pose_quirk(spec, "upside_down"):
+        eyes, mouth = "v v", "^"
 
     art = "\n".join(line.format(eyes=eyes, mouth=mouth) for line in template)
     if mood == "sleeping":
