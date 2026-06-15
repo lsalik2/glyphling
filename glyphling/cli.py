@@ -15,9 +15,12 @@ def default_state_path() -> Path:
 def _cmd_hatch(seed: int) -> None:
     spec = generate(seed)
     s = spec.species
-    print(f"{spec.name} — {s.archetype.value}, {s.circadian.value}, likes: {s.diet}")
-    print(render(spec, "content", 0))
-    print(f"quirks: {', '.join(spec.quirks)}")
+    art = render(spec, "content", 0).strip("\n")          # drop the reserved bubble line
+    print(art)
+    print()
+    print(f"{spec.name}  (seed {spec.seed})")
+    print(f"  {s.archetype.value} · {s.circadian.value} · likes {s.diet} · says \"{s.vocab}\"")
+    print(f"  quirks: {', '.join(spec.quirks)}")
 
 def _cmd_rename(name: str) -> None:
     from glyphling.session import PetSession
