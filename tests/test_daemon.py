@@ -13,6 +13,9 @@ class StubSensor:
     def __init__(self, events): self._events = events
     def poll(self, now, spec, state): return list(self._events)
 
+class BoomSensor:
+    def poll(self, now, spec, state): raise RuntimeError("sensor blew up")
+
 def test_tick_once_writes_heartbeat_and_advances(tmp_path):
     path = tmp_path / "pet.json"
     clock = FakeClock(1000.0)
@@ -33,6 +36,17 @@ def test_tick_once_drains_queue_and_applies_sensor_events(tmp_path):
     _, state, _ = store.load(path)
     assert state.asleep is True
     assert coord.drain_events(path) == []
+
+def test_tick_once_isolates_a_throwing_sensor(tmp_path):
+    path = tmp_path / "pet.json"
+    clock = FakeClock(1000.0)
+    store.save(path, generate(7), new_state(), now=clock())
+    clock.advance(3600)
+    # A sensor that raises must be skipped, not crash the tick; healthy sensors still apply.
+    daemon.tick_once(path, clock, sensors=[BoomSensor(), StubSensor([Event(EventType.NIGHTFALL)])])
+    _, state, last_tick = store.load(path)
+    assert last_tick == clock()        # the tick completed and persisted
+    assert state.asleep is True        # the healthy sensor's NIGHTFALL still applied
 
 def test_tick_once_clamps_catchup(tmp_path):
     path = tmp_path / "pet.json"

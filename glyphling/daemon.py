@@ -2,6 +2,7 @@
 from __future__ import annotations
 import os
 import signal
+import sys
 import time
 from pathlib import Path
 
@@ -26,7 +27,10 @@ def tick_once(path, clock, sensors) -> None:
     elapsed = min(max(0.0, now - last_tick), balance.CATCHUP_MAX_SECONDS)
     events = [event_from_dict(d) for d in coord.drain_events(path)]
     for sensor in sensors:
-        events.extend(sensor.poll(now, spec, state))
+        try:
+            events.extend(sensor.poll(now, spec, state))
+        except Exception as exc:   # sensors are best-effort: a broken one is skipped, never sinks the daemon
+            print(f"glyphling: sensor {type(sensor).__name__} failed: {exc!r}", file=sys.stderr)
 
     # Presence: fresh activity after a long idle gap -> welcome back.
     activity = any(e.type in ACTIVITY_EVENTS for e in events)
