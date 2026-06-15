@@ -18,3 +18,9 @@ def test_shell_init_autodetects_from_shell_env(monkeypatch, capsys):
     monkeypatch.setenv("SHELL", "/usr/bin/zsh")
     cli.main(["shell-init"])
     assert "preexec" in capsys.readouterr().out
+
+def test_hooks_create_log_user_only():
+    # Both hooks must write the (privacy-sensitive) log via a umask-077 subshell so it
+    # stays 0600 even after the daemon drains and the shell recreates it.
+    for shell in ("bash", "zsh"):
+        assert "umask 077" in cli._HOOKS[shell]

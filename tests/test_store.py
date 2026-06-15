@@ -1,3 +1,7 @@
+import os
+import stat
+import sys
+
 import pytest
 
 from glyphling import store
@@ -68,3 +72,11 @@ def test_save_leaves_no_temp_file(tmp_path):
     store.save(path, generate(1), new_state(), now=1.0)
     assert not (tmp_path / "pet.json.tmp").exists()
     store.load(path)                                  # and the published file is valid
+
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX file permissions only")
+def test_save_restricts_state_file_and_dir_permissions(tmp_path):
+    d = tmp_path / "glyphling"
+    path = d / "pet.json"
+    store.save(path, generate(1), new_state(), now=1.0)
+    assert stat.S_IMODE(os.stat(path).st_mode) == 0o600   # pet.json may hold a private name
+    assert stat.S_IMODE(os.stat(d).st_mode) == 0o700      # state dir is user-only

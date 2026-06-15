@@ -43,13 +43,14 @@ def _cmd_run() -> None:
 
 _ZSH_HOOK = r'''# >>> glyphling shell hook >>>  (remove this block to uninstall)
 # Privacy: logs only the command line + exit code you run (already in your shell history),
-# never keystrokes typed into programs. The log is local and drained by the daemon.
+# never keystrokes typed into programs. The log is local (created user-only, 0600) and
+# drained by the daemon.
 _glyphling_log="${XDG_DATA_HOME:-$HOME/.local/share}/glyphling/shell-events.log"
 mkdir -p "${_glyphling_log:h}" 2>/dev/null
 _glyphling_preexec() { _GLYPHLING_CMD="$1" }
 _glyphling_precmd() {
   local ex=$?
-  [ -n "$_GLYPHLING_CMD" ] && printf '%s\t%s\n' "$ex" "$_GLYPHLING_CMD" >> "$_glyphling_log" 2>/dev/null
+  [ -n "$_GLYPHLING_CMD" ] && ( umask 077; printf '%s\t%s\n' "$ex" "$_GLYPHLING_CMD" >> "$_glyphling_log" ) 2>/dev/null
   _GLYPHLING_CMD=""
 }
 autoload -Uz add-zsh-hook
@@ -59,7 +60,8 @@ add-zsh-hook precmd _glyphling_precmd
 
 _BASH_HOOK = r'''# >>> glyphling shell hook >>>  (remove this block to uninstall)
 # Privacy: logs only the command line + exit code you run (already in your shell history),
-# never keystrokes typed into programs. The log is local and drained by the daemon.
+# never keystrokes typed into programs. The log is local (created user-only, 0600) and
+# drained by the daemon.
 _glyphling_log="${XDG_DATA_HOME:-$HOME/.local/share}/glyphling/shell-events.log"
 mkdir -p "$(dirname "$_glyphling_log")" 2>/dev/null
 _glyphling_record() {
@@ -67,7 +69,7 @@ _glyphling_record() {
   local cmd
   cmd=$(history 1 2>/dev/null | sed 's/^ *[0-9]* *//')
   if [ -n "$cmd" ] && [ "$cmd" != "$_GLYPHLING_LAST" ]; then
-    printf '%s\t%s\n' "$ex" "$cmd" >> "$_glyphling_log" 2>/dev/null
+    ( umask 077; printf '%s\t%s\n' "$ex" "$cmd" >> "$_glyphling_log" ) 2>/dev/null
     _GLYPHLING_LAST="$cmd"
   fi
 }

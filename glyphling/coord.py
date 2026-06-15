@@ -7,6 +7,25 @@ from pathlib import Path
 
 from glyphling.core import balance
 
+def ensure_dir(path) -> Path:
+    """Create the state directory user-only (0700) and return it. The pet's state and
+    your shell-event log live here, so it should not be world-readable."""
+    p = Path(path)
+    p.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chmod(p, 0o700)
+    except OSError:
+        pass
+    return p
+
+def harden_file(path) -> None:
+    """Best-effort restrict a file to user read/write only (0600). No-op where chmod
+    is unsupported."""
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass
+
 def _lock_path(state_path) -> Path:
     return Path(state_path).with_name("daemon.lock")
 
@@ -15,8 +34,9 @@ def _queue_path(state_path) -> Path:
 
 def write_heartbeat(state_path, pid: int, now: float) -> None:
     p = _lock_path(state_path)
-    p.parent.mkdir(parents=True, exist_ok=True)
+    ensure_dir(p.parent)
     p.write_text(json.dumps({"pid": pid, "heartbeat": now}))
+    harden_file(p)
 
 def read_lock(state_path):
     p = _lock_path(state_path)
@@ -38,9 +58,10 @@ def clear_lock(state_path) -> None:
 
 def append_event(state_path, event_dict: dict) -> None:
     q = _queue_path(state_path)
-    q.parent.mkdir(parents=True, exist_ok=True)
+    ensure_dir(q.parent)
     with open(q, "a") as f:
         f.write(json.dumps(event_dict) + "\n")
+    harden_file(q)
 
 def drain_events(state_path) -> list:
     """Atomically claim the queue (rename), then read it. Appends that race with a

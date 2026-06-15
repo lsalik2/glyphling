@@ -1,4 +1,10 @@
 # tests/test_coord.py
+import os
+import stat
+import sys
+
+import pytest
+
 from glyphling import coord
 from glyphling.core import balance
 
@@ -32,3 +38,13 @@ def test_drain_tolerates_garbage_lines(tmp_path):
     (tmp_path / "events.jsonl").open("a").write("not json\n")
     drained = coord.drain_events(path)
     assert [d["type"] for d in drained] == ["feed"]
+
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX file permissions only")
+def test_coord_files_and_dir_are_user_only(tmp_path):
+    d = tmp_path / "glyphling"
+    path = d / "pet.json"
+    coord.append_event(path, {"type": "feed", "payload": {}})   # event queue holds your actions
+    coord.write_heartbeat(path, pid=1, now=1.0)
+    assert stat.S_IMODE(os.stat(d / "events.jsonl").st_mode) == 0o600
+    assert stat.S_IMODE(os.stat(d / "daemon.lock").st_mode) == 0o600
+    assert stat.S_IMODE(os.stat(d).st_mode) == 0o700

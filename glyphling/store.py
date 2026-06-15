@@ -4,6 +4,7 @@ import os
 import random
 from pathlib import Path
 
+from glyphling import coord
 from glyphling.core.spec import Archetype, Circadian, Species, Body, CreatureSpec
 from glyphling.core.simulation import PetState, advance, new_state
 from glyphling.core.generator import generate
@@ -47,10 +48,11 @@ def save(path, spec: CreatureSpec, state: PetState, now: float) -> None:
     os.replace the temp into place. A crash mid-save never leaves a partial pet.json,
     and the previous good state survives in `.bak` for recovery."""
     path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    coord.ensure_dir(path.parent)
     data = {"spec": spec_to_dict(spec), "state": dataclasses.asdict(state), "last_tick": now}
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(json.dumps(data, indent=2))
+    coord.harden_file(tmp)              # published file (and the .bak it rotates into) stays 0600
     if path.exists():
         os.replace(path, path.with_name(path.name + ".bak"))   # keep last-good as .bak
     os.replace(tmp, path)                                       # atomic publish
