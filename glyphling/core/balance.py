@@ -62,3 +62,48 @@ LOW_BATTERY_PCT = 20.0            # battery below this (and unplugged) -> "tired
 REACTION_TTL = 6.0                 # seconds a reaction speech bubble stays up
 AWAY_THRESHOLD_SECONDS = 30 * 60   # idle gap that counts as "away" -> welcome-back on return
 DEV_BOND = 0.5                     # tiny bond bump on a dev "win"
+
+# --- Phase 4a: depth & payoff ---
+
+# Stage decay multiplier (applied on top of metabolism). Babies burn hot; elders mellow; egg
+# keeps the baseline (1.0) so a freshly-hatched pet decays normally from its first tick.
+STAGE_DECAY_FACTOR = {"egg": 1.0, "baby": 1.3, "juvenile": 1.1, "adult": 1.0, "elder": 0.8}
+
+# Per-need personality decay tilt: need -> (axis, weight). factor = clamp(1 + weight*axis, *CLAMP).
+PERSONALITY_DECAY = {
+    "social":      ("affection", 0.25),   # clingy (high affection) drains social faster
+    "energy":      ("energy",    0.25),   # hyper burns energy faster
+    "cleanliness": ("tidy",     -0.25),   # tidy stays clean longer
+    "happiness":   ("playful",   0.25),   # playful needs play more often
+}
+PERSONALITY_DECAY_CLAMP = (0.5, 1.5)
+
+# Mood inertia: a PLAY/PRAISE keeps the playful/excited mood this long, then it settles.
+PLAY_MOOD_SECONDS = 180.0
+
+# Bond tiers: (lower-bound-inclusive, name), ascending.
+BOND_TIERS = [(0, "stranger"), (20, "acquaintance"), (40, "friend"), (60, "companion"), (80, "bonded")]
+# Points shaved off LOW_NEED_THRESHOLD by tier (effective floor never below CRITICAL+2).
+BOND_MOOD_FLOOR = {"stranger": 0, "acquaintance": 3, "friend": 6, "companion": 10, "bonded": 14}
+
+# Idle quirk cadence.
+QUIRK_BUCKET_MAX_SECONDS = 600.0   # ~10 min between idle quirks at bond 0
+QUIRK_BUCKET_MIN_SECONDS = 120.0   # ~2 min at bond 100
+QUIRK_FIRE_WINDOW_SECONDS = 10.0   # = daemon interval; one tick lands in the bucket's opening window
+QUIRK_SILENCE_SLOTS = 3            # base "quiet bucket" slots; fewer as bond rises
+
+
+def bond_tier(bond: float) -> str:
+    name = BOND_TIERS[0][1]
+    for lower, tier_name in BOND_TIERS:
+        if bond >= lower:
+            name = tier_name
+    return name
+
+
+def tier_index(bond: float) -> int:
+    idx = 0
+    for i, (lower, _name) in enumerate(BOND_TIERS):
+        if bond >= lower:
+            idx = i
+    return idx
