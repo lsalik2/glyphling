@@ -1,4 +1,6 @@
 # tests/test_daemon.py
+import dataclasses
+
 from glyphling import daemon, store, coord
 from glyphling.core.generator import generate
 from glyphling.core.simulation import new_state
@@ -135,3 +137,46 @@ def test_tick_once_no_reaction_while_asleep(tmp_path):
     daemon.tick_once(path, clock, sensors=[sensor])
     _, st2, _ = store.load(path)
     assert st2.reaction_text == "" and st2.bond == 0.0     # asleep -> no bubble, no bond
+
+def test_tick_once_stamps_idle_quirk_for_bonded_calm_pet(tmp_path):
+    path = tmp_path / "pet.json"
+    clock = FakeClock(6000.0)                    # 6000 = 50 * 120s bucket start (bonded)
+    spec = dataclasses.replace(generate(7), quirks=("hums to itself", "collects pebbles"))
+    st = new_state(); st.stage = "adult"; st.bond = 100.0
+    store.save(path, spec, st, now=clock())
+    daemon.tick_once(path, clock, sensors=[])
+    _, s2, _ = store.load(path)
+    assert s2.reaction_text != "" and s2.reaction_mood == "playful"
+
+def test_tick_once_skips_idle_quirk_while_asleep(tmp_path):
+    path = tmp_path / "pet.json"
+    clock = FakeClock(6000.0)
+    spec = dataclasses.replace(generate(7), quirks=("hums to itself", "collects pebbles"))
+    st = new_state(); st.stage = "adult"; st.bond = 100.0
+    st.asleep = True; st.sleep_reason = "manual"
+    store.save(path, spec, st, now=clock())
+    daemon.tick_once(path, clock, sensors=[])
+    _, s2, _ = store.load(path)
+    assert s2.reaction_text == ""
+
+def test_tick_once_skips_idle_quirk_when_miserable(tmp_path):
+    path = tmp_path / "pet.json"
+    clock = FakeClock(6000.0)
+    spec = dataclasses.replace(generate(7), quirks=("hums to itself", "collects pebbles"))
+    st = new_state(); st.stage = "adult"; st.bond = 100.0
+    st.needs["fullness"] = 5.0                  # -> mood "hungry" (miserable), even for a bonded pet
+    store.save(path, spec, st, now=clock())
+    daemon.tick_once(path, clock, sensors=[])
+    _, s2, _ = store.load(path)
+    assert s2.reaction_text == ""               # a miserable pet doesn't frolic
+
+def test_tick_once_event_quirk_overrides_reaction(tmp_path):
+    path = tmp_path / "pet.json"
+    clock = FakeClock(1000.0)
+    spec = dataclasses.replace(generate(7), quirks=("sneezes when startled", "hums to itself"))
+    st = new_state(); st.stage = "adult"
+    store.save(path, spec, st, now=clock())
+    daemon.tick_once(path, clock, sensors=[StubSensor([Event(EventType.STARTLED)])])
+    _, s2, _ = store.load(path)
+    assert s2.reaction_text in ("*achoo!*", "hh-CHOO!", "*sneeze*")
+    assert s2.reaction_mood == "startled"
