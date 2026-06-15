@@ -2,6 +2,7 @@
 """Pure mapping from a dev/presence event to a personality-flavored speech line + pose.
 No I/O, no clock. The daemon supplies a rotating `salt` for variety; the TUI renders it."""
 from glyphling.core.events import EventType
+from glyphling.core import balance
 
 # event -> (mood, {tone: [lines]}). Tone is "loud" or "soft", chosen by personality.
 _REACTIONS = {
@@ -35,12 +36,25 @@ _REACTIONS = {
     }),
 }
 
+# Warmer welcome-back lines as bond grows (by tier). Tiers below "friend" use the base table.
+_WELCOME_BY_TIER = {
+    "friend":    {"loud": ["hey, you're back!", "yyy, hi!"],          "soft": ["you're back.", "hi, you."]},
+    "companion": {"loud": ["there you are!", "missed you!"],          "soft": ["missed you.", "good to see you."]},
+    "bonded":    {"loud": ["missed you so much!", "you're home!!"],   "soft": ["missed you so.", "so glad you're back."]},
+}
+
 def _tone(spec) -> str:
     p = spec.personality
     return "loud" if (p.get("bold", 0.0) + p.get("energy", 0.0)) >= 0.0 else "soft"
 
-def reaction_for(event_type, spec, salt: int = 0):
-    """Return (speech_line, mood) for a reaction event, or None if the event has no reaction."""
+def reaction_for(event_type, spec, salt: int = 0, bond: float = 0.0):
+    """Return (speech_line, mood) for a reaction event, or None if the event has no reaction.
+    WELCOMED_BACK warms with bond; all other reactions ignore `bond`."""
+    if event_type == EventType.WELCOMED_BACK:
+        tiered = _WELCOME_BY_TIER.get(balance.bond_tier(bond))
+        if tiered is not None:
+            lines = tiered[_tone(spec)]
+            return lines[salt % len(lines)], "happy"
     entry = _REACTIONS.get(event_type)
     if entry is None:
         return None

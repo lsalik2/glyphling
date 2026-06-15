@@ -39,3 +39,22 @@ def test_personality_changes_tone():
     loud_lines = {reaction_for(EventType.COMMITTED, loud, salt=i)[0] for i in range(6)}
     soft_lines = {reaction_for(EventType.COMMITTED, soft, salt=i)[0] for i in range(6)}
     assert loud_lines != soft_lines
+
+def test_welcome_back_warms_with_bond():
+    from glyphling.core.reactions import reaction_for
+    from glyphling.core.events import EventType
+    from glyphling.core.generator import generate
+    spec = generate(7)
+    stranger = reaction_for(EventType.WELCOMED_BACK, spec, salt=0, bond=0.0)
+    bonded = reaction_for(EventType.WELCOMED_BACK, spec, salt=0, bond=100.0)
+    assert stranger[1] == "happy" and bonded[1] == "happy"
+    assert stranger[0] != bonded[0]            # warmer line at high bond
+
+def test_non_greeting_reaction_ignores_bond():
+    from glyphling.core.reactions import reaction_for
+    from glyphling.core.events import EventType
+    from glyphling.core.generator import generate
+    spec = generate(7)
+    a = reaction_for(EventType.TESTS_PASSED, spec, salt=0, bond=0.0)
+    b = reaction_for(EventType.TESTS_PASSED, spec, salt=0, bond=100.0)
+    assert a == b and a is not None
