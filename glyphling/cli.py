@@ -38,6 +38,16 @@ def _cmd_daemon(action: str) -> None:
     else:
         daemon.print_status(path)
 
+def _cmd_status(compact: bool) -> None:
+    from glyphling import store
+    from glyphling.statusline import format_line
+    path = default_state_path()
+    if not path.exists():
+        print("no glyphling yet — run 'glyphling' to hatch one")
+        return
+    spec, state, _ = store.load(path)          # pure read: no advance, no save
+    print(format_line(spec, state, compact=compact))
+
 def _cmd_run() -> None:
     from glyphling.session import PetSession
     from glyphling.tui.app import GlyphlingApp
@@ -108,6 +118,8 @@ def main(argv=None) -> None:
     p_daemon.add_argument("action", choices=["start", "stop", "status"])
     p_shell = sub.add_parser("shell-init", help="print a shell hook so the pet notices your commands")
     p_shell.add_argument("shell", nargs="?", choices=["bash", "zsh"], default=None)
+    p_status = sub.add_parser("status", help="one-line glance at your pet (for tmux/prompt)")
+    p_status.add_argument("--compact", action="store_true")
     args = parser.parse_args(argv)
 
     if args.cmd == "hatch":
@@ -118,6 +130,8 @@ def main(argv=None) -> None:
         _cmd_daemon(args.action)
     elif args.cmd == "shell-init":
         _cmd_shell_init(args.shell)
+    elif args.cmd == "status":
+        _cmd_status(args.compact)
     else:
         _cmd_run()
 
