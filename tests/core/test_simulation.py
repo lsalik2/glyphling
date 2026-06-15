@@ -203,3 +203,24 @@ def test_clingy_pet_drains_social_faster():
     advance(s1, 3600, [], clingy)
     advance(s2, 3600, [], aloof)
     assert s1.needs["social"] < s2.needs["social"]
+
+def test_play_sets_playful_ttl_and_it_drains():
+    from glyphling.core.simulation import advance, new_state
+    from glyphling.core.events import Event, EventType
+    from glyphling.core.generator import generate
+    from glyphling.core import balance
+    spec = generate(7); st = new_state(); st.stage = "adult"
+    advance(st, 0, [Event(EventType.PLAY)], spec)
+    assert st.playful_ttl == balance.PLAY_MOOD_SECONDS
+    advance(st, 60, [], spec)
+    assert st.playful_ttl == balance.PLAY_MOOD_SECONDS - 60
+
+def test_playful_mood_settles_after_ttl():
+    from glyphling.core.simulation import advance, new_state
+    from glyphling.core.events import Event, EventType
+    from glyphling.core.generator import generate
+    spec = generate(7); st = new_state(); st.stage = "adult"
+    advance(st, 0, [Event(EventType.PLAY)], spec)
+    assert st.mood in ("playful", "excited")
+    advance(st, 200, [], spec)                 # > PLAY_MOOD_SECONDS; PLAY left energy at ~65
+    assert st.mood == "content"                # settled (energy < 70 so not happy), not pinned playful

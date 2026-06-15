@@ -42,6 +42,7 @@ class PetState:
     reaction_mood: str = "none"    # pose to show while a reaction is live
     reaction_expires_at: float = 0.0  # epoch; bubble shows while clock() < this
     last_active_at: float = 0.0    # epoch of last real activity (presence)
+    playful_ttl: float = 0.0       # seconds the playful/excited mood persists after PLAY/PRAISE
 
 def new_state() -> PetState:
     return PetState(
@@ -87,8 +88,7 @@ def derive_mood(state: PetState, personality: dict) -> str:
             "cleanliness": Mood.GRUMPY,
             "happiness": Mood.SAD,
         }[worst].value
-    last = state.recent_events[-1] if state.recent_events else None
-    if last in (EventType.PLAY.value, EventType.PRAISE.value):
+    if state.playful_ttl > 0.0:
         if personality.get("energy", 0.0) > 0.3:
             return Mood.EXCITED.value
         return Mood.PLAYFUL.value
@@ -133,6 +133,7 @@ def _apply_event(state: PetState, event: Event, spec: CreatureSpec) -> None:
         state.needs[need] = _clamp_need(state.needs[need] + applied)
     if et in POSITIVE_BOND_EVENTS:
         state.bond = min(balance.BOND_MAX, state.bond + balance.BOND_PER_POSITIVE)
+        state.playful_ttl = balance.PLAY_MOOD_SECONDS
     if et in WAKING_EVENTS:
         state.asleep, state.sleep_reason = False, "none"
     state.recent_events.append(et.value)
@@ -153,6 +154,9 @@ def advance(state: PetState, elapsed_seconds: float, events: list, spec: Creatur
         if state.asleep:
             rate *= balance.SLEEP_DECAY_FACTOR
         state.needs[k] = _clamp_need(state.needs[k] - rate * hours)
+
+    # Mood-inertia countdown (drains by real elapsed, like needs).
+    state.playful_ttl = max(0.0, state.playful_ttl - max(0.0, elapsed_seconds))
 
     # 2. Events (user actions + future sensor events).
     for event in events:
