@@ -40,3 +40,11 @@ def test_no_speech_means_no_bubble():
     spec = generate(42)
     art = render(spec, "content", frame_idx=0)
     assert "yesss" not in art
+
+def test_speech_line_is_reserved_so_the_body_never_shifts():
+    spec = generate(42)
+    with_speech = render(spec, "excited", frame_idx=0, speech="hi!").splitlines()
+    without = render(spec, "content", frame_idx=0).splitlines()
+    assert len(with_speech) == len(without)      # bubble pops in place, no layout shift
+    assert with_speech[0].strip() == "( hi! )"
+    assert without[0].strip() == ""              # top line reserved, blank when silent

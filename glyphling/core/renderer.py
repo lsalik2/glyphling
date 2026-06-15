@@ -23,6 +23,7 @@ def render(spec: CreatureSpec, mood: str, frame_idx: int = 0, speech: str = "") 
     art = "\n".join(line.format(eyes=eyes, mouth=mouth) for line in template)
     if mood == "sleeping":
         art = _add_sleep_z(art, frame_idx)
-    if speech:
-        art = _add_speech(speech) + "\n" + art
-    return art
+    # Always reserve the top line for the speech bubble (blank when silent) so the
+    # creature never jumps up/down a row when a reaction pops or fades.
+    bubble = _add_speech(speech) if speech else ""
+    return bubble + "\n" + art
