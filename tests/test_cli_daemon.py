@@ -38,6 +38,29 @@ def test_stop_does_not_signal_a_stale_daemon(tmp_path, monkeypatch):
     assert called == []                       # never signaled a possibly-reused PID
     assert coord.read_lock(path) is None       # stale lock cleared
 
+def test_stop_does_not_kill_a_recycled_pid(tmp_path, monkeypatch):
+    # Fresh heartbeat, but the PID now belongs to some unrelated (recycled) process.
+    import glyphling.daemon as d
+    path = tmp_path / "pet.json"
+    coord.write_heartbeat(path, pid=4321, now=1000.0)
+    killed = []
+    monkeypatch.setattr(d.os, "kill", lambda *a: killed.append(a))
+    monkeypatch.setattr(d, "_pid_is_glyphling_daemon", lambda pid: False, raising=False)
+    d.stop(path, now=1000.0)
+    assert killed == []                    # refused to signal a process that isn't our daemon
+    assert coord.read_lock(path) is None   # cleared the bogus lock instead
+
+def test_stop_signals_a_verified_live_daemon(tmp_path, monkeypatch):
+    import glyphling.daemon as d
+    import signal as _signal
+    path = tmp_path / "pet.json"
+    coord.write_heartbeat(path, pid=4321, now=1000.0)
+    killed = []
+    monkeypatch.setattr(d.os, "kill", lambda pid, sig: killed.append((pid, sig)))
+    monkeypatch.setattr(d, "_pid_is_glyphling_daemon", lambda pid: True, raising=False)
+    d.stop(path, now=1000.0)
+    assert killed == [(4321, _signal.SIGTERM)]   # verified our daemon -> signaled it
+
 def test_status_on_stale_lock_says_not_running(tmp_path, capsys):
     path = tmp_path / "pet.json"
     coord.write_heartbeat(path, pid=4321, now=1000.0)

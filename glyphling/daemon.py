@@ -94,13 +94,27 @@ def print_status(path, now=None) -> None:
     else:
         print("glyphling daemon not running")
 
+def _pid_is_glyphling_daemon(pid: int) -> bool:
+    """Best-effort guard against a recycled PID: is this process actually our daemon?
+    On Linux, check /proc/<pid>/cmdline; elsewhere, fall back to a bare liveness probe
+    (can't verify identity -> assume yes, preserving prior behavior)."""
+    try:
+        cmdline = Path(f"/proc/{pid}/cmdline").read_bytes()
+    except OSError:
+        try:
+            os.kill(pid, 0)        # no /proc entry: probe liveness
+            return True            # alive but unverifiable
+        except OSError:
+            return False           # not alive
+    return b"glyphling" in cmdline
+
 def stop(path, now=None) -> None:
     now = time.time() if now is None else now
     lock = coord.read_lock(path)
     if not lock:
         print("glyphling daemon not running")
         return
-    if not status(path, now):
+    if not status(path, now) or not _pid_is_glyphling_daemon(lock["pid"]):
         coord.clear_lock(path)
         print("glyphling daemon not running (cleared stale lock)")
         return
