@@ -80,3 +80,16 @@ def test_save_restricts_state_file_and_dir_permissions(tmp_path):
     store.save(path, generate(1), new_state(), now=1.0)
     assert stat.S_IMODE(os.stat(path).st_mode) == 0o600   # pet.json may hold a private name
     assert stat.S_IMODE(os.stat(d).st_mode) == 0o700      # state dir is user-only
+
+def test_pre_4a_state_without_playful_ttl_loads(tmp_path):
+    import json, dataclasses
+    from glyphling import store
+    from glyphling.core.generator import generate
+    from glyphling.core.simulation import new_state
+    path = tmp_path / "pet.json"
+    d = {"spec": store.spec_to_dict(generate(7)),
+         "state": dataclasses.asdict(new_state()), "last_tick": 1000.0}
+    d["state"].pop("playful_ttl")              # simulate a pre-4a save
+    path.write_text(json.dumps(d))
+    _, state, _ = store.load(path)
+    assert state.playful_ttl == 0.0            # defaulted, loads fine

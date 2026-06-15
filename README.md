@@ -13,6 +13,7 @@ pip install -e ".[dev]"
 - `glyphling hatch 42` — preview the creature a seed produces
 - `glyphling` — hatch (first run) and open your pet's live view
 - `glyphling rename Pixel` — rename your pet
+- `glyphling status` — a one-line glance at your pet (great in a shell prompt or tmux status bar; `--compact` for the short form)
 
 In the live view: **f** feed · **p** play · **c** clean · **r** rest · **e** pet · **n** rename · **q** quit.
 
@@ -57,9 +58,10 @@ glyphling grows in layers — each phase stands on its own, so it's always a who
 - Named the project **glyphling** (package, CLI, and repo)
 - **Phase 2 — it lives on its own:** background daemon (`glyphling daemon start/stop/status`) + ambient sensors; sleeps at its circadian night, ambient mood from CPU/battery, all while the TUI is closed
 - **Phase 3 — desk familiar:** opt-in shell hook (`glyphling shell-init`) + dev-activity reactions (cheers tests, celebrates commits, winces at failures, startles at scary commands) with speech bubbles, plus a welcome-back greeting
+- **Phase 4a — depth & payoff:** life-stage- and personality-aware need decay; quirks wired to behavior (idle flourishes, event reactions, an upside-down sleep); bond now pays off — named tiers (stranger → bonded) that soften gloom, warm greetings, and surface favorite quirks; plus a one-line `glyphling status` glance
 
 **⏳ Next up**
-- **Phase 4 · polish & breadth** — a one-line status-bar/tmux view, more archetypes/parts/quirks, visible life-stage growth, bond payoffs, color themes, balance tuning
+- **Phase 4b · visual breadth** — color palettes (+ `NO_COLOR`), life-stage growth visuals, more archetypes/parts
 
 ### 🌱 Beyond Phase 4 — expansion ideas
 
