@@ -59,6 +59,10 @@ class GlyphlingApp(App):
         for key in NEED_KEYS:
             lines.append(f"{key:<11}{_bar(st.needs[key])}")
         lines.append(f"{'health':<11}{_bar(st.health)}   bond {_bar(st.bond)}")
+        if self.session.reader_mode:
+            lines.append("daemon: on (reacting to your dev life)")
+        else:
+            lines.append("daemon: off  (run 'glyphling daemon start' + 'shell-init' for live reactions)")
         self.query_one("#stats", Static).update("\n".join(lines))
 
     def _do(self, event_type: EventType) -> None:

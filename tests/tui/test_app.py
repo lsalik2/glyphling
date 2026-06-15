@@ -38,6 +38,31 @@ async def test_name_with_markup_renders_literally(tmp_path):
         assert "[red]Boom[/]" in content   # literal brackets preserved, not interpreted
 
 @pytest.mark.asyncio
+async def test_stats_show_daemon_off_in_owner_mode(tmp_path):
+    from textual.widgets import Static
+    session = PetSession.start(tmp_path / "pet.json", clock=FakeClock(), seed=7)
+    app = GlyphlingApp(session)
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        content = str(app.query_one("#stats", Static).visual)
+        assert "daemon: off" in content     # hints how to enable live reactions
+
+@pytest.mark.asyncio
+async def test_stats_show_daemon_on_when_a_daemon_is_alive(tmp_path):
+    from textual.widgets import Static
+    from glyphling import coord
+    clock = FakeClock()
+    path = tmp_path / "pet.json"
+    PetSession.start(path, clock=clock, seed=7)            # hatch on disk
+    coord.write_heartbeat(path, pid=99999, now=clock())    # pretend a daemon is live
+    session = PetSession.start(path, clock=clock, seed=7)
+    app = GlyphlingApp(session)
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        content = str(app.query_one("#stats", Static).visual)
+        assert "daemon: on" in content
+
+@pytest.mark.asyncio
 async def test_animation_interval_does_not_crash(tmp_path):
     session = PetSession.start(tmp_path / "pet.json", clock=FakeClock(), seed=7)
     app = GlyphlingApp(session)
