@@ -80,7 +80,10 @@ def derive_mood(state: PetState, personality: dict) -> str:
     if state.health < balance.SICK_HEALTH_THRESHOLD:
         return Mood.SICK.value
     worst = min(NEED_KEYS, key=lambda k: state.needs[k])
-    if state.needs[worst] < balance.LOW_NEED_THRESHOLD:
+    tier = balance.bond_tier(state.bond)
+    low = max(balance.CRITICAL_NEED_THRESHOLD + 2.0,
+              balance.LOW_NEED_THRESHOLD - balance.BOND_MOOD_FLOOR[tier])
+    if state.needs[worst] < low:
         return {
             "fullness": Mood.HUNGRY,
             "energy": Mood.TIRED,

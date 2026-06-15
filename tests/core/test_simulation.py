@@ -224,3 +224,13 @@ def test_playful_mood_settles_after_ttl():
     assert st.mood in ("playful", "excited")
     advance(st, 200, [], spec)                 # > PLAY_MOOD_SECONDS; PLAY left energy at ~65
     assert st.mood == "content"                # settled (energy < 70 so not happy), not pinned playful
+
+def test_bond_softens_need_gloom_but_never_sick():
+    from glyphling.core.simulation import derive_mood, new_state
+    st = new_state(); st.needs["fullness"] = 22.0
+    st.bond = 0.0
+    assert derive_mood(st, {}) == "hungry"        # stranger: gloom below 30
+    st.bond = 100.0
+    assert derive_mood(st, {}) == "content"        # bonded: floor lowered to ~17
+    sick = new_state(); sick.bond = 100.0; sick.health = 10.0
+    assert derive_mood(sick, {}) == "sick"         # health-based sick is never softened
