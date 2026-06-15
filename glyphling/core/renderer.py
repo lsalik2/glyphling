@@ -21,7 +21,7 @@ def render(spec: CreatureSpec, mood: str, frame_idx: int = 0, speech: str = "") 
         eyes = "- -"
 
     if mood == "sleeping" and quirks.has_pose_quirk(spec, "upside_down"):
-        eyes, mouth = "v v", "^"
+        eyes, mouth = "v v", "^"   # intentionally ASCII (the pet is pure-ASCII), not a unicode glyph
 
     art = "\n".join(line.format(eyes=eyes, mouth=mouth) for line in template)
     if mood == "sleeping":

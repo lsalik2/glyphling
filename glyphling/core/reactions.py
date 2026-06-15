@@ -38,8 +38,8 @@ _REACTIONS = {
 
 # Warmer welcome-back lines as bond grows (by tier). Tiers below "friend" use the base table.
 _WELCOME_BY_TIER = {
-    "friend":    {"loud": ["hey, you're back!", "yyy, hi!"],          "soft": ["you're back.", "hi, you."]},
-    "companion": {"loud": ["there you are!", "missed you!"],          "soft": ["missed you.", "good to see you."]},
+    "friend":    {"loud": ["hey, you're back!", "yyy, hi!"],          "soft": ["good to see you back.", "hi, you."]},
+    "companion": {"loud": ["there you are!", "i've missed you!"],     "soft": ["i've missed you.", "good to see you."]},
     "bonded":    {"loud": ["missed you so much!", "you're home!!"],   "soft": ["missed you so.", "so glad you're back."]},
 }
 
