@@ -2,10 +2,10 @@
 """Watches an opt-in shell-event log (commands + exit codes you ran), classifies each
 into a dev reaction event, and drains the log so it never accumulates. Privacy: opt-in,
 command lines only, local, drained continuously, removable."""
-import os
 import shlex
 from pathlib import Path
 
+from glyphling import coord
 from glyphling.core.events import Event, EventType
 
 _TEST_PROGS = {"pytest", "jest", "vitest", "tox", "rspec", "phpunit"}
@@ -72,20 +72,8 @@ class ShellSensor:
         self._log = Path(state_path).with_name("shell-events.log")
         self._primed = False
 
-    def _drain(self) -> list:
-        if not self._log.exists():
-            return []
-        proc = self._log.with_name(self._log.name + ".processing")
-        try:
-            os.replace(self._log, proc)
-        except OSError:
-            return []
-        lines = proc.read_text(errors="replace").splitlines()
-        proc.unlink(missing_ok=True)
-        return lines
-
     def poll(self, now, spec, state) -> list:
-        lines = self._drain()
+        lines = coord.drain_lines(self._log)
         if not self._primed:
             self._primed = True
             return []

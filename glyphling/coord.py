@@ -63,19 +63,27 @@ def append_event(state_path, event_dict: dict) -> None:
         f.write(json.dumps(event_dict) + "\n")
     harden_file(q)
 
-def drain_events(state_path) -> list:
-    """Atomically claim the queue (rename), then read it. Appends that race with a
-    drain land in a fresh queue file and are picked up next drain."""
-    q = _queue_path(state_path)
-    if not q.exists():
+def drain_lines(path) -> list:
+    """Atomically claim a line-oriented append log (rename -> read -> delete) and return
+    its lines. Appends that race with the claim land in a fresh file and are picked up on
+    the next drain. Shared by the event queue and the shell-event log."""
+    p = Path(path)
+    if not p.exists():
         return []
-    processing = q.with_name(q.name + ".processing")
+    processing = p.with_name(p.name + ".processing")
     try:
-        os.replace(q, processing)
+        os.replace(p, processing)
     except OSError:
         return []
+    try:
+        return processing.read_text(errors="replace").splitlines()
+    finally:
+        processing.unlink(missing_ok=True)
+
+def drain_events(state_path) -> list:
+    """Drain the event queue and parse each line as JSON, skipping blanks and garbage."""
     out = []
-    for line in processing.read_text().splitlines():
+    for line in drain_lines(_queue_path(state_path)):
         line = line.strip()
         if not line:
             continue
@@ -83,5 +91,4 @@ def drain_events(state_path) -> list:
             out.append(json.loads(line))
         except ValueError:
             continue
-    processing.unlink(missing_ok=True)
     return out

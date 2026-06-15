@@ -39,6 +39,13 @@ def test_drain_tolerates_garbage_lines(tmp_path):
     drained = coord.drain_events(path)
     assert [d["type"] for d in drained] == ["feed"]
 
+def test_drain_lines_claims_and_clears(tmp_path):
+    log = tmp_path / "x.log"
+    log.write_text("a\nb\n")
+    assert coord.drain_lines(log) == ["a", "b"]
+    assert not log.exists()                 # the log was claimed and removed
+    assert coord.drain_lines(log) == []     # nothing left to drain
+
 @pytest.mark.skipif(sys.platform == "win32", reason="POSIX file permissions only")
 def test_coord_files_and_dir_are_user_only(tmp_path):
     d = tmp_path / "glyphling"
