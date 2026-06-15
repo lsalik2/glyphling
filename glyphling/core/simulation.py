@@ -65,6 +65,14 @@ def stage_for_age(effective_hours: float) -> str:
 def _clamp_need(value: float) -> float:
     return max(balance.NEED_MIN, min(balance.NEED_MAX, value))
 
+def _personality_decay_factor(need: str, personality: dict) -> float:
+    entry = balance.PERSONALITY_DECAY.get(need)
+    if entry is None:
+        return 1.0
+    axis, weight = entry
+    lo, hi = balance.PERSONALITY_DECAY_CLAMP
+    return max(lo, min(hi, 1.0 + weight * personality.get(axis, 0.0)))
+
 def derive_mood(state: PetState, personality: dict) -> str:
     if state.asleep:
         return Mood.SLEEPING.value
@@ -135,11 +143,13 @@ def advance(state: PetState, elapsed_seconds: float, events: list, spec: Creatur
     metabolism = spec.species.metabolism
 
     # 1. Time decay.
+    stage_factor = balance.STAGE_DECAY_FACTOR.get(state.stage, 1.0)
     for k in NEED_KEYS:
         if state.asleep and k == "energy":
             state.needs[k] = _clamp_need(state.needs[k] + balance.SLEEP_ENERGY_REGEN_PER_HOUR * hours)
             continue
-        rate = balance.BASE_DECAY_PER_HOUR[k] * metabolism
+        rate = balance.BASE_DECAY_PER_HOUR[k] * metabolism * stage_factor
+        rate *= _personality_decay_factor(k, spec.personality)
         if state.asleep:
             rate *= balance.SLEEP_DECAY_FACTOR
         state.needs[k] = _clamp_need(state.needs[k] - rate * hours)

@@ -172,3 +172,34 @@ def test_dev_events_do_not_pollute_recent_events_or_wake():
 def test_startled_mood_value_exists():
     from glyphling.core.simulation import Mood
     assert Mood.STARTLED.value == "startled"
+
+def test_personality_decay_factor_defaults_and_clamps():
+    from glyphling.core.simulation import _personality_decay_factor
+    assert _personality_decay_factor("fullness", {"affection": 1.0}) == 1.0   # not in table
+    assert _personality_decay_factor("social", {"affection": 1.0}) == 1.25
+    assert _personality_decay_factor("cleanliness", {"tidy": 1.0}) == 0.75
+    assert _personality_decay_factor("social", {"affection": 5.0}) == 1.5     # clamped
+
+def test_baby_decays_faster_than_adult():
+    import dataclasses
+    from glyphling.core.generator import generate
+    from glyphling.core.simulation import advance, new_state
+    spec = generate(7)
+    baby, adult = new_state(), new_state()
+    baby.stage, adult.stage = "baby", "adult"
+    advance(baby, 3600, [], spec)
+    advance(adult, 3600, [], spec)
+    assert baby.needs["fullness"] < adult.needs["fullness"]
+
+def test_clingy_pet_drains_social_faster():
+    import dataclasses
+    from glyphling.core.generator import generate
+    from glyphling.core.simulation import advance, new_state
+    spec = generate(7)
+    clingy = dataclasses.replace(spec, personality={**spec.personality, "affection": 1.0})
+    aloof = dataclasses.replace(spec, personality={**spec.personality, "affection": -1.0})
+    s1, s2 = new_state(), new_state()
+    s1.stage = s2.stage = "adult"
+    advance(s1, 3600, [], clingy)
+    advance(s2, 3600, [], aloof)
+    assert s1.needs["social"] < s2.needs["social"]
