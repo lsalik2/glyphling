@@ -28,6 +28,62 @@ BODY_TEMPLATES = {
     ],
 }
 
+# Shared dormant egg (no face slots — .format leaves it untouched).
+EGG_TEMPLATE = [
+    "   .-.",
+    "  ( . )",
+    "   `-'",
+]
+
+# Per-archetype, per-stage body templates. "adult" reuses BODY_TEMPLATES (byte-identical).
+STAGE_TEMPLATES = {
+    "blob": {
+        "baby": [
+            "  ( {eyes} )",
+            "   `-{mouth}-'",
+        ],
+        "juvenile": [
+            '   .-"-.',
+            "  ( {eyes} )",
+            "   `-{mouth}-'",
+        ],
+        "adult": BODY_TEMPLATES["blob"],
+        "elder": [
+            "   .-~~~-.",
+            "  ( {eyes} )",
+            "  (  {mouth}  )",
+            "   `-.__.-'",
+        ],
+    },
+    "critter": {
+        "baby": [
+            "  ( {eyes} )",
+            "   > {mouth} <",
+        ],
+        "juvenile": [
+            "   /\\_/\\",
+            "  ( {eyes} )",
+            "   > {mouth} <",
+        ],
+        "adult": BODY_TEMPLATES["critter"],
+        "elder": [
+            "    /\\_/\\",
+            "   ( {eyes} )",
+            "  ~> {mouth} <~",
+            "   /     \\",
+        ],
+    },
+}
+
+
+def template_for(archetype: str, stage: str) -> list:
+    """Body template for an (archetype, stage). Egg is shared; unknown stages fall back to adult."""
+    if stage == "egg":
+        return EGG_TEMPLATE
+    stages = STAGE_TEMPLATES[archetype]
+    return stages.get(stage, stages["adult"])
+
+
 # Mood -> (eyes_override, mouth_override). None means "keep the creature's base part".
 MOOD_FACE = {
     "content":  (None, None),
