@@ -60,9 +60,10 @@ glyphling grows in layers — each phase stands on its own, so it's always a who
 - **Phase 3 — desk familiar:** opt-in shell hook (`glyphling shell-init`) + dev-activity reactions (cheers tests, celebrates commits, winces at failures, startles at scary commands) with speech bubbles, plus a welcome-back greeting
 - **Phase 4a — depth & payoff:** life-stage- and personality-aware need decay; quirks wired to behavior (idle flourishes, event reactions, an upside-down sleep); bond now pays off — named tiers (stranger → bonded) that soften gloom, warm greetings, and surface favorite quirks; plus a one-line `glyphling status` glance
 - **Phase 4b-i — color:** every creature now has a seeded, intrinsic color palette (body · accent · eyes) that mood-tints — a sick pet greys and greens, a sleeping one dims; falls back to clean monochrome under `NO_COLOR`, non-truecolor terminals, or when piped
+- **Phase 4b-ii — life-stage growth:** the creature now visibly grows — a shared egg hatches into a tiny big-eyed baby and grows through juvenile, adult, and a wispy elder, per archetype (color and mood ride along at every stage)
 
 **⏳ Next up**
-- **Phase 4b · visual breadth (cont.)** — life-stage growth visuals, more archetypes/parts
+- **Phase 4b · visual breadth (cont.)** — more archetypes/parts
 
 ### 🌱 Beyond Phase 4 — expansion ideas
 
