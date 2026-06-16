@@ -57,3 +57,35 @@ def test_upside_down_sleep_pose():
     assert "v v" in render(upside, "sleeping", frame_idx=0)        # inverted eyes
     plain = dataclasses.replace(generate(7), quirks=("hums to itself", "collects pebbles"))
     assert "v v" not in render(plain, "sleeping", frame_idx=0)
+
+def test_render_without_palette_is_plain_no_markup():
+    from glyphling.core.generator import generate
+    from glyphling.core.renderer import render
+    art = render(generate(42), "content", frame_idx=0)
+    assert "[" not in art and "]" not in art      # plain text, no Rich markup
+
+def test_render_with_palette_emits_body_color_markup():
+    from glyphling.core.generator import generate
+    from glyphling.core.renderer import render
+    from glyphling.core.palette import palette_for
+    p = palette_for(42)
+    art = render(generate(42), "content", frame_idx=0, speech="hi!", palette=p)
+    body = f"rgb({p.body[0]},{p.body[1]},{p.body[2]})"
+    assert body in art                              # body color applied
+    assert f"rgb({p.eyes[0]},{p.eyes[1]},{p.eyes[2]})" in art   # eyes color applied
+    assert "( hi! )" in art                         # bubble text still present (wrapped)
+
+def test_colored_markup_parses_to_exact_plain_art_for_all_archetypes():
+    # Rich must parse the color markup back to EXACTLY the plain art — guards the critter
+    # trailing-backslash case (seed 7 is a critter: template lines end with '\').
+    from rich.text import Text
+    from glyphling.core.generator import generate
+    from glyphling.core.renderer import render
+    from glyphling.core.palette import palette_for
+    assert {generate(42).species.archetype.value, generate(7).species.archetype.value} == {"blob", "critter"}
+    for seed in (42, 7):
+        spec = generate(seed)
+        for mood in ("content", "sleeping"):
+            colored = render(spec, mood, frame_idx=0, speech="hi!", palette=palette_for(seed))
+            plain = render(spec, mood, frame_idx=0, speech="hi!")
+            assert Text.from_markup(colored).plain == plain
