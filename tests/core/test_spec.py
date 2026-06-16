@@ -37,3 +37,9 @@ def test_loaded_spec_recomputes_palette(tmp_path):
     store.save(path, generate(42), new_state(), now=1.0)
     spec2, _, _ = store.load(path)
     assert spec2.palette == palette_for(42)
+
+def test_archetype_enum_has_six_values():
+    from glyphling.core.spec import Archetype
+    assert {a.value for a in Archetype} == {
+        "blob", "critter", "avian", "serpentine", "quadruped", "tuft"
+    }

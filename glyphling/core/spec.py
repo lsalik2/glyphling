@@ -6,6 +6,10 @@ from glyphling.core.palette import Palette, palette_for
 class Archetype(str, Enum):
     BLOB = "blob"
     CRITTER = "critter"
+    AVIAN = "avian"
+    SERPENTINE = "serpentine"
+    QUADRUPED = "quadruped"
+    TUFT = "tuft"
 
 class Circadian(str, Enum):
     DIURNAL = "diurnal"
