@@ -122,3 +122,19 @@ def test_color_round_trips_for_all_stages_and_archetypes():
                 c = render(spec, mood, 0, speech="hi!", stage=stage, palette=tint(palette_for(seed), mood))
                 p = render(spec, mood, 0, speech="hi!", stage=stage)
                 assert Text.from_markup(c).plain == p
+
+def test_color_round_trips_for_every_archetype():
+    import dataclasses
+    from rich.text import Text
+    from glyphling.core.generator import generate
+    from glyphling.core.renderer import render
+    from glyphling.core.palette import palette_for, tint
+    from glyphling.core.spec import Archetype
+    base = generate(42)
+    for arch in Archetype:
+        spec = dataclasses.replace(base, species=dataclasses.replace(base.species, archetype=arch))
+        for stage in ("egg", "baby", "juvenile", "adult", "elder"):
+            for mood in ("content", "sleeping"):
+                c = render(spec, mood, 0, speech="hi", stage=stage, palette=tint(palette_for(42), mood))
+                p = render(spec, mood, 0, speech="hi", stage=stage)
+                assert Text.from_markup(c).plain == p, f"{arch.value}/{stage}/{mood}"

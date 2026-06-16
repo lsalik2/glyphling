@@ -73,6 +73,92 @@ STAGE_TEMPLATES = {
             "   /     \\",
         ],
     },
+    "avian": {
+        "baby": [
+            " ( {eyes} )",
+            "  <{mouth}",
+        ],
+        "juvenile": [
+            " ( {eyes} )",
+            " <{mouth} )",
+            '   " "',
+        ],
+        "adult": [
+            "  ( {eyes} )",
+            " <( {mouth} )",
+            "   ^^ ^^",
+        ],
+        "elder": [
+            " ~( {eyes} )~",
+            " <( {mouth} )",
+            "   ^^ ^^",
+        ],
+    },
+    "serpentine": {
+        "baby": [
+            " ( {eyes} )~,",
+            "   {mouth} ~'",
+        ],
+        "juvenile": [
+            " ( {eyes} )~~,",
+            "   {mouth}   )",
+            "      ~~~~'",
+        ],
+        "adult": [
+            " ( {eyes} )~~~,",
+            "   {mouth}     )",
+            "      `~~~~~~~'",
+        ],
+        "elder": [
+            " ( {eyes} )~~~,",
+            "  {mouth}      )",
+            "      `~~~~~~~<",
+        ],
+    },
+    "quadruped": {
+        "baby": [
+            " ( {eyes} )",
+            "  n{mouth}n",
+        ],
+        "juvenile": [
+            " ( {eyes} )",
+            " ( {mouth} )",
+            "  || ||",
+        ],
+        "adult": [
+            "  ( {eyes} )",
+            " /( {mouth} )\\",
+            "  ||     ||",
+        ],
+        "elder": [
+            "  ( {eyes} )",
+            " /( {mouth} )\\",
+            "  ||~   ~||",
+        ],
+    },
+    "tuft": {
+        "baby": [
+            "  \\|/",
+            " ({eyes})",
+        ],
+        "juvenile": [
+            "  \\|/",
+            " ( {eyes} )",
+            "  ){mouth}(",
+        ],
+        "adult": [
+            "  \\|/|\\|/",
+            " ( {eyes} )",
+            "  ) {mouth} (",
+            "  `'''''`",
+        ],
+        "elder": [
+            "  \\|/|\\|/",
+            " ~( {eyes} )~",
+            "  ) {mouth} (",
+            "  `'''''`",
+        ],
+    },
 }
 
 

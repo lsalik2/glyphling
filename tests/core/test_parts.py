@@ -34,3 +34,12 @@ def test_baby_is_shorter_than_adult():
     from glyphling.core import parts
     for a in ("blob", "critter"):
         assert len(parts.template_for(a, "baby")) < len(parts.template_for(a, "adult"))
+
+def test_new_archetypes_have_all_stages():
+    from glyphling.core import parts
+    for a in ("avian", "serpentine", "quadruped", "tuft"):
+        for stage in ("baby", "juvenile", "adult", "elder"):
+            t = parts.template_for(a, stage)
+            assert isinstance(t, list) and len(t) >= 2
+        assert parts.template_for(a, "egg") == parts.EGG_TEMPLATE          # egg shared
+        assert len(parts.template_for(a, "baby")) < len(parts.template_for(a, "adult"))
