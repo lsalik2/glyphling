@@ -80,3 +80,12 @@ async def test_stats_show_bond_tier(tmp_path):
         await pilot.pause()
         content = str(app.query_one("#stats", Static).visual)
         assert "stranger" in content
+
+@pytest.mark.asyncio
+async def test_colored_pet_renders_without_error(tmp_path):
+    session = PetSession.start(tmp_path / "pet.json", clock=FakeClock(), seed=7)
+    app = GlyphlingApp(session)
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        await pilot.pause(0.3)               # let an animation frame render the color markup
+        assert app._exception is None        # color markup parsed & rendered, no crash

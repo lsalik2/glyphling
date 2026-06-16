@@ -36,7 +36,7 @@ class GlyphlingApp(App):
         self.frame = 0
 
     def compose(self) -> ComposeResult:
-        yield Static(id="pet", markup=False)
+        yield Static(id="pet", markup=True)
         yield Static(id="stats", markup=False)
         yield Footer()
 
