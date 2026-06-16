@@ -103,3 +103,8 @@ def test_render_frame_no_bubble_while_asleep(tmp_path):
     session.state.reaction_expires_at = 1005.0
     art = session.render_frame(0)
     assert "yesss" not in art
+
+def test_render_frame_is_colored(tmp_path):
+    clock = FakeClock()
+    session = PetSession.start(tmp_path / "pet.json", clock=clock, seed=7)
+    assert "rgb(" in session.render_frame(0)        # creature is rendered in color markup

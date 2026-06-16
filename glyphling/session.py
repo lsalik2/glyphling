@@ -5,6 +5,7 @@ from pathlib import Path
 from glyphling import store, coord
 from glyphling.core.events import Event, EventType, event_to_dict
 from glyphling.core.renderer import render
+from glyphling.core.palette import tint
 from glyphling.engine import apply_events
 
 class PetSession:
@@ -67,5 +68,7 @@ class PetSession:
     def render_frame(self, frame_idx: int = 0) -> str:
         st = self.state
         if st.reaction_text and not st.asleep and self.clock() < st.reaction_expires_at:
-            return render(self.spec, st.reaction_mood, frame_idx, speech=st.reaction_text)
-        return render(self.spec, st.mood, frame_idx)
+            mood, speech = st.reaction_mood, st.reaction_text
+        else:
+            mood, speech = st.mood, ""
+        return render(self.spec, mood, frame_idx, speech=speech, palette=tint(self.spec.palette, mood))
