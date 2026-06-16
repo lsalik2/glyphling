@@ -77,13 +77,14 @@ def test_render_with_palette_emits_body_color_markup():
 
 def test_colored_markup_parses_to_exact_plain_art_for_all_archetypes():
     # Rich must parse the color markup back to EXACTLY the plain art — guards the critter
-    # trailing-backslash case (seed 7 is a critter: template lines end with '\').
+    # trailing-backslash case (seed 9 is a critter: template lines end with '\').
     from rich.text import Text
     from glyphling.core.generator import generate
     from glyphling.core.renderer import render
     from glyphling.core.palette import palette_for
-    assert {generate(42).species.archetype.value, generate(7).species.archetype.value} == {"blob", "critter"}
-    for seed in (42, 7):
+    # seeds 6 and 9 produce blob and critter respectively (via the dedicated archetype stream)
+    assert {generate(6).species.archetype.value, generate(9).species.archetype.value} == {"blob", "critter"}
+    for seed in (6, 9):
         spec = generate(seed)
         for mood in ("content", "sleeping"):
             colored = render(spec, mood, frame_idx=0, speech="hi!", palette=palette_for(seed))

@@ -4,7 +4,7 @@ from glyphling.cli import main
 def test_hatch_prints_creature(capsys):
     main(["hatch", "42"])
     out = capsys.readouterr().out
-    assert "blob" in out or "critter" in out      # species line
+    assert any(a in out for a in ("blob", "critter", "avian", "serpentine", "quadruped", "tuft"))  # species line
     assert "\n" in out.strip()                     # multi-line art rendered
 
 def test_hatch_output_is_clean_and_shows_seed(capsys):
