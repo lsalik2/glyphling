@@ -108,3 +108,12 @@ def test_render_frame_is_colored(tmp_path):
     clock = FakeClock()
     session = PetSession.start(tmp_path / "pet.json", clock=clock, seed=7)
     assert "rgb(" in session.render_frame(0)        # creature is rendered in color markup
+
+def test_render_frame_uses_pet_stage(tmp_path):
+    clock = FakeClock()
+    session = PetSession.start(tmp_path / "pet.json", clock=clock, seed=7)
+    session.state.stage = "baby"
+    baby = session.render_frame(0)
+    session.state.stage = "adult"
+    adult = session.render_frame(0)
+    assert baby.count("\n") < adult.count("\n")        # the baby body is smaller

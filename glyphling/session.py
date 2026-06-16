@@ -71,4 +71,5 @@ class PetSession:
             mood, speech = st.reaction_mood, st.reaction_text
         else:
             mood, speech = st.mood, ""
-        return render(self.spec, mood, frame_idx, speech=speech, palette=tint(self.spec.palette, mood))
+        return render(self.spec, mood, frame_idx, speech=speech,
+                      palette=tint(self.spec.palette, mood), stage=st.stage)
