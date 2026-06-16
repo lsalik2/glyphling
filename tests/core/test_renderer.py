@@ -89,3 +89,36 @@ def test_colored_markup_parses_to_exact_plain_art_for_all_archetypes():
             colored = render(spec, mood, frame_idx=0, speech="hi!", palette=palette_for(seed))
             plain = render(spec, mood, frame_idx=0, speech="hi!")
             assert Text.from_markup(colored).plain == plain
+
+def test_render_stage_default_adult_is_unchanged():
+    from glyphling.core.generator import generate
+    from glyphling.core.renderer import render
+    spec = generate(42)
+    assert render(spec, "content", frame_idx=0) == render(spec, "content", frame_idx=0, stage="adult")
+
+def test_render_baby_is_shorter_than_adult():
+    from glyphling.core.generator import generate
+    from glyphling.core.renderer import render
+    spec = generate(42)
+    baby = render(spec, "content", frame_idx=0, stage="baby")
+    adult = render(spec, "content", frame_idx=0, stage="adult")
+    assert baby.count("\n") < adult.count("\n")
+
+def test_render_egg_has_no_face_substitution_error():
+    from glyphling.core.generator import generate
+    from glyphling.core.renderer import render
+    art = render(generate(42), "content", frame_idx=0, stage="egg")
+    assert ".-." in art
+
+def test_color_round_trips_for_all_stages_and_archetypes():
+    from rich.text import Text
+    from glyphling.core.generator import generate
+    from glyphling.core.renderer import render
+    from glyphling.core.palette import palette_for, tint
+    for seed in (42, 7):                                # blob, critter
+        spec = generate(seed)
+        for stage in ("egg", "baby", "juvenile", "adult", "elder"):
+            for mood in ("content", "sleeping"):
+                c = render(spec, mood, 0, speech="hi!", stage=stage, palette=tint(palette_for(seed), mood))
+                p = render(spec, mood, 0, speech="hi!", stage=stage)
+                assert Text.from_markup(c).plain == p

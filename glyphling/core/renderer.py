@@ -21,8 +21,8 @@ def _add_sleep_z(art: str, frame_idx: int) -> str:
 def _add_speech(text: str) -> str:
     return f"( {text} )"
 
-def render(spec: CreatureSpec, mood: str, frame_idx: int = 0, speech: str = "", palette=None) -> str:
-    template = parts.BODY_TEMPLATES[spec.species.archetype.value]
+def render(spec: CreatureSpec, mood: str, frame_idx: int = 0, speech: str = "", palette=None, stage: str = "adult") -> str:
+    template = parts.template_for(spec.species.archetype.value, stage)
     eye_override, mouth_override = parts.MOOD_FACE.get(mood, (None, None))
     eyes = eye_override if eye_override is not None else spec.body.eyes
     mouth = mouth_override if mouth_override is not None else spec.body.mouth
