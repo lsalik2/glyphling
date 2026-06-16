@@ -13,10 +13,12 @@ def default_state_path() -> Path:
     return Path(base) / "glyphling" / "pet.json"
 
 def _cmd_hatch(seed: int) -> None:
+    from glyphling.core.palette import tint
+    from rich.console import Console
     spec = generate(seed)
     s = spec.species
-    art = render(spec, "content", 0).strip("\n")          # drop the reserved bubble line
-    print(art)
+    art = render(spec, "content", 0, palette=tint(spec.palette, "content")).strip("\n")
+    Console().print(art, highlight=False)     # colored in a tty; mono when NO_COLOR / piped
     print()
     print(f"{spec.name}  (seed {spec.seed})")
     print(f"  {s.archetype.value} · {s.circadian.value} · likes {s.diet} · says \"{s.vocab}\"")
