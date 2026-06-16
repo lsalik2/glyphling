@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
+from glyphling.core.palette import Palette, palette_for
 
 class Archetype(str, Enum):
     BLOB = "blob"
@@ -36,3 +37,8 @@ class CreatureSpec:
     body: Body
     personality: dict   # axis -> float in [-1, 1]
     quirks: tuple        # tuple[str, ...]
+    palette: Palette = None   # seed-derived; filled by __post_init__, never persisted
+
+    def __post_init__(self):
+        if self.palette is None:
+            object.__setattr__(self, "palette", palette_for(self.seed))
