@@ -1,6 +1,6 @@
 # glyphling
 
-A procedurally-generated, interactive ASCII pet that lives in your terminal — a one-of-a-kind creature you care for that reacts to your real dev life.
+A procedurally-generated, interactive ASCII pet that lives in your terminal — a colorful, one-of-a-kind creature that grows from egg to elder (one of six body plans), that you care for and that reacts to your real dev life.
 
 ## Install
 ```
@@ -50,8 +50,8 @@ calls, ever.
 
 glyphling grows in layers — each phase stands on its own, so it's always a whole thing, never half-built.
 
-**✅ Shipped — v0.1 · "the pet is alive"**
-- Procedural generation — a unique look, temperament, quirks, and species rules from a single seed
+**✅ Shipped — v0.2 · "colorful, characterful, alive"**
+- Procedural generation — a unique look, color, temperament, quirks, and species rules from a single seed
 - Care simulation — five needs, derived moods, life stages, bond; *suffers but survives* (it can never die)
 - Real-time decay with offline catch-up, saved between sessions
 - Animated Textual TUI — feed · play · clean · rest · pet · rename
@@ -71,10 +71,10 @@ glyphling grows in layers — each phase stands on its own, so it's always a who
 Directions glyphling could grow once the core is solid. Nothing scheduled — this is the fun horizon.
 
 **More creatures**
-- New archetypes / body plans — aquatic, avian, serpentine, plant·mossling, insectoid, slime, crystalline, mechanical, ghost·wisp, mythic (dragon / phoenix)
+- More archetypes / body plans — aquatic, insectoid, slime, crystalline, mechanical, ghost·wisp, mythic (dragon / phoenix)  *(blob · critter · avian · serpentine · quadruped · tuft already shipped)*
 - Rare & "shiny" variants — uncommon seeds yield special palettes, parts, or markings
 - Elemental & biome themes — fire / water / earth / air flavors that shape both looks *and* behavior
-- Expanded palettes, patterns & animated textures
+- Color themes & expanded palettes, patterns & animated textures
 - Wearable cosmetics — hats, scarves, tiny found objects
 - Seasonal & event creatures — special generation around holidays
 
@@ -89,7 +89,7 @@ Directions glyphling could grow once the core is solid. Nothing scheduled — th
 - Mini-games — fetch, hide-and-seek, a tiny terminal game or two
 - Foods, toys & items tied to species diet and mood
 - Learnable tricks unlocked by bond
-- Achievements & milestones — first week, 100 tests cheered, bond tiers
+- Achievements & milestones — first week, 100 tests cheered, life-stage anniversaries
 - Care-shaped growth — life-stage outcomes branch on how you raised it
 
 **More companion integrations**
@@ -101,7 +101,7 @@ Directions glyphling could grow once the core is solid. Nothing scheduled — th
 - UI themes / skins
 - A data-driven mod system — author your own parts, foods, quirks, and reactions
 - An ambient "screensaver" mode
-- Accessibility — pure-ASCII, no-color, screen-reader-friendly modes
+- Accessibility — a screen-reader-friendly mode (pure-ASCII and `NO_COLOR` already supported)
 
 **Social**
 - Shareable creature seeds & exportable "creature cards"
